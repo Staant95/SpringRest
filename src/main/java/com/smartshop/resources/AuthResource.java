@@ -1,89 +1,95 @@
 package com.smartshop.resources;
 
 
-import com.smartshop.auth.JwtUtil;
-import com.smartshop.models.AuthRequest;
+import com.smartshop.auth.CustomUserDetailsService;
 import com.smartshop.models.Token;
 import com.smartshop.models.User;
+import com.smartshop.models.auth.AuthenticationRequest;
 import com.smartshop.repositories.TokenRespository;
 import com.smartshop.repositories.UserRepository;
+import com.smartshop.utils.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/auth")
 public class AuthResource {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private JwtUtil jwtUtil;
 
     @Autowired
     private AuthenticationManager authenticationManager;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private TokenRespository tokenRespository;
 
+    @Autowired
+    private CustomUserDetailsService userDetailsService;
 
-    @PostMapping(path = "/login")
-    public Token login(@RequestBody AuthRequest request) throws Exception {
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @PostMapping("/login")
+    public ResponseEntity<Token> createAuthenticationToken(@Valid @RequestBody AuthenticationRequest authenticationRequest) throws Exception {
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
+                            authenticationRequest.getEmail(),
+                            authenticationRequest.getPassword()
                     )
             );
-        } catch(BadCredentialsException e) {
-            throw new BadCredentialsException("Incorrect login data");
+        }
+        catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username or password", e);
         }
 
-        Optional<User> optionalUser = this.userRepository.findByEmail(request.getEmail());
+        final UserDetails userDetails = userDetailsService
+                .loadUserByUsername(authenticationRequest.getEmail());
 
-        User user = optionalUser.isPresent() ? optionalUser.get() : null;
+        User optionalUser = userRepository.findByEmail(userDetails.getUsername()).get();
 
-        if(user.getToken() != null) return user.getToken();
+        User user = optionalUser;
 
-        return storeUserToken(user);
+        // Check if user has already a token and it's valid
+        if(user.getToken() != null) {
+
+            if(jwtUtil.validateToken(user.getToken().getToken(), userDetails)) {
+
+                return ResponseEntity.ok(user.getToken());
+            }
+            // token is invalid, delete from database and continue
+            user.removeToken(user.getToken());
+        }
+
+        final String jwt = jwtUtil.generateToken(userDetails);
+
+        Token token = new Token(jwt, jwtUtil.extractExpiration(jwt), user);
+        user.addToken(token);
+        User saved = this.userRepository.save(user);
+
+        return ResponseEntity.ok(saved.getToken());
     }
 
-    @PostMapping(path = "/register")
-    public User register(@RequestBody User user) {
 
-        user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
-        User savedUser = this.userRepository.save(user);
-
-        return savedUser;
+    @PostMapping("/register")
+    public User register(@Valid @RequestBody User user) {
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        return this.userRepository.save(user);
     }
-
-
-    private Token storeUserToken(User user) {
-
-        String userToken = jwtUtil.generateToken(user.getEmail());
-
-        Token token = new Token();
-        token.setToken(userToken);
-        token.setExpiration_date(jwtUtil.extractExpiration(userToken));
-        token.setUser(user);
-        Token savedToken = this.tokenRespository.save(token);
-
-        user.setToken(savedToken);
-        this.userRepository.save(user);
-
-        return savedToken;
-    }
-
 
 }
 

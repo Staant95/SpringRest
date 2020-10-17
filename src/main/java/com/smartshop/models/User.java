@@ -1,5 +1,7 @@
 package com.smartshop.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -25,7 +27,7 @@ public class User {
     @NotBlank(message = "Lastname field is required")
     private String lastname;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     @NotBlank(message = "Email field is required")
     private String email;
 
@@ -33,20 +35,27 @@ public class User {
     @NotBlank(message = "Password field is required")
     private String password;
 
-    @Column
-    private String role =  "USER";
+    private String role = "user";
 
-    @OneToOne(mappedBy = "user")
+    @OneToOne(
+            mappedBy = "user",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     private Token token;
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.PERSIST,
-                    CascadeType.MERGE
-            })
-    @JoinTable(name = "user_shoplist",
-            joinColumns = { @JoinColumn(name = "user_id") },
-            inverseJoinColumns = { @JoinColumn(name = "shoplist_id") })
-    private Set<Shoplist> shoplists = new HashSet<>();
+
+    public void addToken(Token token) {
+        token.setUser(this);
+        this.setToken(token);
+    }
+
+    public void removeToken(Token token) {
+        if(token != null) {
+            token.setUser(null);
+            this.token = null;
+        }
+    }
 
 }

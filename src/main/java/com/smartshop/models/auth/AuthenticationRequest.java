@@ -1,11 +1,14 @@
-package com.smartshop.models;
+package com.smartshop.models.auth;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@NoArgsConstructor
 @Data
-public class AuthRequest {
+@NoArgsConstructor
+public class AuthenticationRequest {
+
     private String email;
+
     private String password;
+
 }

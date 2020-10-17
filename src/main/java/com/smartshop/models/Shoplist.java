@@ -19,11 +19,4 @@ public class Shoplist {
     @Column(nullable = false)
     private String name;
 
-    @ManyToMany(fetch = FetchType.LAZY,
-            cascade = {
-                    CascadeType.PERSIST,
-                    CascadeType.MERGE
-            },
-            mappedBy = "shoplists")
-    private Set<User> users = new HashSet<>();
 }

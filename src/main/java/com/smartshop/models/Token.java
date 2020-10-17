@@ -1,16 +1,15 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.Date;
 
+@Entity
 @Data
 @NoArgsConstructor
-@Entity
 public class Token {
 
     @Id
@@ -21,9 +20,15 @@ public class Token {
 
     private Date expiration_date;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
     @JsonBackReference
     private User user;
 
 
+    public Token(String jwt, Date expiration_date, User user) {
+        this.token = jwt;
+        this.expiration_date = expiration_date;
+        this.user = user;
+    }
 }

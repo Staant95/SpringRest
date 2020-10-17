@@ -1,41 +1,26 @@
 package com.smartshop.auth;
 
-import com.smartshop.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
-
-public class MyUserDetails implements UserDetails {
-
+public class CustomUserDetails implements UserDetails {
 
     private String email;
-    private String name;
-    private String lastname;
     private String password;
-    private List<GrantedAuthority> authorities;
 
 
-    public MyUserDetails() {
-
+    public CustomUserDetails(String email, String password) {
+        this.email = email;
+        this.password = password;
     }
-
-    public MyUserDetails(User user) {
-        this.email = user.getEmail();
-        this.name = user.getName();
-        this.lastname = user.getLastname();
-        this.password = user.getPassword();
-        this.authorities = Arrays.asList(new SimpleGrantedAuthority(user.getRole()));
-    }
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return this.authorities;
+        return Arrays.asList(new SimpleGrantedAuthority("USER"));
     }
 
     @Override
