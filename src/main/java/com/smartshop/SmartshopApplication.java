@@ -1,12 +1,17 @@
 package com.smartshop;
 
+import com.smartshop.services.DatabaseSeeder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @SpringBootApplication
-public class SmartshopApplication {
+public class SmartshopApplication implements CommandLineRunner {
+    @Autowired
+    private DatabaseSeeder seeder;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -20,4 +25,8 @@ public class SmartshopApplication {
 
     }
 
+    @Override
+    public void run(String... args) throws Exception {
+        this.seeder.seed();
+    }
 }

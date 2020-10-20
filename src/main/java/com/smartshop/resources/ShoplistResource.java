@@ -2,8 +2,11 @@ package com.smartshop.resources;
 
 import com.smartshop.dto.ShoplistDto;
 import com.smartshop.dtoMappers.ShoplistMapper;
+import com.smartshop.models.BestSupermarket;
 import com.smartshop.models.Shoplist;
+import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.ShoplistRepository;
+import com.smartshop.repositories.SupermarketRepository;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +25,9 @@ public class ShoplistResource {
 
     @Autowired
     private ShoplistRepository shoplistRepository;
+
+    @Autowired
+    private SupermarketRepository supermarketRepository;
 
     @Autowired
     private ShoplistMapper shoplistMapper;
@@ -65,6 +71,23 @@ public class ShoplistResource {
         this.shoplistRepository.delete(shoplist.get());
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/{shoplist}/best")
+    public ResponseEntity getBestSupermarket(@PathVariable("shoplist") Long id) {
+        String[] queryResults = this.shoplistRepository.getBestSupermarket(id)[0].split(",");
+        BestSupermarket supermarket = new BestSupermarket();
+
+        Supermarket best = this.supermarketRepository.findById(Long.parseLong(queryResults[0])).get();
+
+        supermarket.setId(best.getId());
+        supermarket.setName(best.getName());
+        supermarket.setTotal(Double.parseDouble(queryResults[1]));
+
+        return ResponseEntity.ok(
+               supermarket
+        );
     }
 
 }

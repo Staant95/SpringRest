@@ -130,4 +130,6 @@ public class ShoplistProductResource {
 
         return ResponseEntity.ok(null);
     }
+
+
 }
