@@ -1,33 +1,43 @@
 package com.smartshop.resources;
 
+import com.smartshop.dto.UserDto;
+import com.smartshop.dtoMappers.UserMapper;
 import com.smartshop.models.User;
 import com.smartshop.repositories.UserRepository;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
-@RequestMapping(path = "/users")
+@RequestMapping("/users")
 public class UserResource {
 
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserMapper userMapper;
 
     @GetMapping(produces = "application/json")
-    public List<User> index() {
-        return userRepository.findAll();
+    public ResponseEntity<List<UserDto>> index() {
+
+        return ResponseEntity.ok(userMapper.toDtoList(userRepository.findAll()));
 
     }
 
 
     @GetMapping
-    @RequestMapping("/{user_id}")
-    public User show(@PathVariable("user_id") Long id) {
-        if(this.userRepository.findByEmail("stas@gmail.com").isPresent())
-            return this.userRepository.findByEmail("stas@gmail.com").get();
+    @RequestMapping("/{user}")
+    public ResponseEntity<UserDto> show(@PathVariable("user") Long id) {
 
-        return new User();
+        Optional<User> searchedUser = this.userRepository.findById(id);
+
+        if(searchedUser.isEmpty()) return ResponseEntity.notFound().build();
+
+        return ResponseEntity.ok(this.userMapper.toDto(searchedUser.get()));
     }
 }

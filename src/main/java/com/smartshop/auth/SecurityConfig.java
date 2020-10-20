@@ -20,8 +20,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private static final String[] WHITELIST = {
             "/auth/register",
             "/auth/login",
-            "/test",
-            "/test/login"
+            "/test/**",
+            "/supermarkets/**",
+            "/products/**",
+            "/users/**",
+            "/users/**/shoplists",
+            "/shoplists/**"
     };
 
 

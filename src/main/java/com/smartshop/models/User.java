@@ -1,10 +1,8 @@
 package com.smartshop.models;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -14,6 +12,7 @@ import java.util.Set;
 @Entity
 @NoArgsConstructor
 @Data
+@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property  = "id", scope = User.class)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -27,7 +26,7 @@ public class User {
     @NotBlank(message = "Lastname field is required")
     private String lastname;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     @NotBlank(message = "Email field is required")
     private String email;
 
@@ -46,6 +45,12 @@ public class User {
     private Token token;
 
 
+    @ManyToMany(mappedBy = "users", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JsonIgnoreProperties("users")
+    private Set<Shoplist> shoplists = new HashSet<>();
+
+
+
     public void addToken(Token token) {
         token.setUser(this);
         this.setToken(token);
@@ -57,5 +62,7 @@ public class User {
             this.token = null;
         }
     }
+
+
 
 }
