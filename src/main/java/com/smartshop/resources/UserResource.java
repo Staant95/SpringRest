@@ -4,7 +4,6 @@ import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
 import com.smartshop.models.User;
 import com.smartshop.repositories.UserRepository;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
