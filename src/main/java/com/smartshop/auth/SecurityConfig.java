@@ -3,7 +3,6 @@ package com.smartshop.auth;
 import com.smartshop.auth.filters.JwtRequestFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // UserDetailsService will authenticate the user by checking if it has a token or not
+        // The password encoder is BCrypt
         auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder());
     }
 

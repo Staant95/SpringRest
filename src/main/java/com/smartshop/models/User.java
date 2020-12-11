@@ -50,6 +50,12 @@ public class User {
     private Set<Shoplist> shoplists = new HashSet<>();
 
 
+    public User(@NotBlank(message = "Name field is required") String name, @NotBlank(message = "Lastname field is required") String lastname, @NotBlank(message = "Email field is required") String email, @NotBlank(message = "Password field is required") String password) {
+        this.name = name;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+    }
 
     public void addToken(Token token) {
         token.setUser(this);

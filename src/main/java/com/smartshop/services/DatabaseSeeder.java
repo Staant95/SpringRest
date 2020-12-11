@@ -1,57 +1,98 @@
 package com.smartshop.services;
 
+import com.github.javafaker.Faker;
+import com.smartshop.SmartshopApplication;
 import com.smartshop.models.Product;
 import com.smartshop.models.ProductSupermarket;
 import com.smartshop.models.Supermarket;
+import com.smartshop.models.User;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
+import com.smartshop.repositories.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 
 @Service
 public class DatabaseSeeder {
 
-    @Autowired
-    private SupermarketRepository supermarketRepository;
+    private final SupermarketRepository supermarketRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
+    private final Faker faker;
+
+    private final UserRepository userRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(DatabaseSeeder.class);
+
+    public DatabaseSeeder(SupermarketRepository supermarketRepository, ProductRepository productRepository, UserRepository userRepository) {
+        this.supermarketRepository = supermarketRepository;
+        this.productRepository = productRepository;
+        this.userRepository = userRepository;
+        this.faker = new Faker();
+    }
+
+
+    // could be divided in sub classes
     public void seed() {
 
-        Supermarket supermarket1 = new Supermarket();
-        Supermarket supermarket2 = new Supermarket();
-        supermarket1.setName("Conad");
-        supermarket2.setName("Carrefour");
+        // --------------- Supermarket ----------
+
+        List<Supermarket> supermarketList = new ArrayList<>();
+
+        supermarketList.add(new Supermarket("Conad"));
+        supermarketList.add(new Supermarket("Carrefour"));
+
+        // --------------- Products ------------
+
+        List<Product> productList = new ArrayList<>();
+        productList.add(new Product("Pane"));
+        productList.add(new Product("Carne"));
+        productList.add(new Product("Mele"));
+        productList.add(new Product("Latte"));
+
+        productRepository.saveAll(productList);
 
 
 
-        Product product1 = new Product();
-        Product product2 = new Product();
-        Product product3 = new Product();
-        Product product4 = new Product();
-        product1.setName("Pane");
-        product2.setName("Carne");
-        product3.setName("Mele");
-        product4.setName("Latte");
+        for(Supermarket s : supermarketList) {
 
-        this.productRepository.saveAll(Arrays.asList(product1, product2, product3, product4));
+            for(Product p : productList) {
+
+                double randomPrice = new Random().nextDouble() * 30.0 + 0.50;
+                addProductToSupermarket(s, p, randomPrice);
+
+            }
+
+        }
+
+        supermarketRepository.saveAll(supermarketList);
 
 
-        addProductToSupermarket(supermarket1, product1, 1.2);
 
-        addProductToSupermarket(supermarket1, product2, 4.2);
-        addProductToSupermarket(supermarket1, product3, 1.8);
-        addProductToSupermarket(supermarket1, product4, 0.5);
+        // --------------- Users ------------
 
-        addProductToSupermarket(supermarket2, product1, 0.99);
-        addProductToSupermarket(supermarket2, product2, 4.5);
-        addProductToSupermarket(supermarket2, product3, 2.6);
-        addProductToSupermarket(supermarket2, product4, 1.2);
+        for(int i = 0; i < 3; i++) {
 
-        this.supermarketRepository.saveAll(Arrays.asList(supermarket1, supermarket2));
+            User u = new User(
+                    faker.name().firstName(),
+                    faker.name().lastName(),
+                    faker.lorem().word() + "@gmail.com",
+                    faker.lorem().word());
+
+            logger.info("Email -> " + u.getEmail() + " password -> " + u.getPassword());
+
+            u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
+            this.userRepository.save(u);
+        }
 
 
     }

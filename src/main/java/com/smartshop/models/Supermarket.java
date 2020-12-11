@@ -2,6 +2,7 @@ package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,6 +33,11 @@ public class Supermarket {
             orphanRemoval = true)
     private Set<ProductSupermarket> products = new HashSet<>();
 
+
+
+    public Supermarket(String name) {
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -1,10 +1,7 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -41,6 +38,12 @@ public class Product {
     )
     @JsonManagedReference("productShoplist")
     private Set<ProductShoplist> shoplists = new HashSet<>();
+
+
+    public Product(String name) {
+        this.name = name;
+    }
+
 
     @Override
     public boolean equals(Object o) {
