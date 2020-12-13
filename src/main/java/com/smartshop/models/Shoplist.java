@@ -38,6 +38,11 @@ public class Shoplist {
     private Set<ProductShoplist> products = new HashSet<>();
 
 
+    public Shoplist(String name) {
+        this.name = name;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

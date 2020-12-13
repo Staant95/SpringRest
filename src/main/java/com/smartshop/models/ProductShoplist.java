@@ -29,6 +29,12 @@ public class ProductShoplist implements Serializable {
     private int quantity = 1;
 
 
+    public ProductShoplist(Product product, Shoplist shoplist) {
+        this.shoplist = shoplist;
+        this.product = product;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

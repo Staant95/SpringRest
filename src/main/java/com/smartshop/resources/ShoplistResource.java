@@ -3,10 +3,12 @@ package com.smartshop.resources;
 import com.smartshop.dto.ShoplistDto;
 import com.smartshop.dtoMappers.ShoplistMapper;
 import com.smartshop.models.BestSupermarket;
+import com.smartshop.models.Position;
 import com.smartshop.models.Shoplist;
 import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.SupermarketRepository;
+import com.smartshop.services.DistanceBetweenTwoPoints;
 import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -31,6 +33,9 @@ public class ShoplistResource {
 
     @Autowired
     private ShoplistMapper shoplistMapper;
+
+    @Autowired
+    private DistanceBetweenTwoPoints distanceBetweenTwoPoints;
 
     @GetMapping
     public ResponseEntity<Set<ShoplistDto>> index() {
@@ -75,9 +80,12 @@ public class ShoplistResource {
 
 
     @GetMapping("/{shoplist}/best")
-    public ResponseEntity getBestSupermarket(@PathVariable("shoplist") Long id) {
+    public ResponseEntity getBestSupermarket(@PathVariable("shoplist") Long id,
+                                             @RequestBody Optional<Position> userPosition) {
         String[] queryResults = this.shoplistRepository.getBestSupermarket(id)[0].split(",");
         BestSupermarket supermarket = new BestSupermarket();
+
+        // this.distanceBetweenTwoPoints.calculateInKm(userPosition, supermarket.getPosition())
 
         Supermarket best = this.supermarketRepository.findById(Long.parseLong(queryResults[0])).get();
 
@@ -89,5 +97,7 @@ public class ShoplistResource {
                supermarket
         );
     }
+
+
 
 }

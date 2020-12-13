@@ -1,7 +1,9 @@
 package com.smartshop.seeders;
 
 import com.github.javafaker.Faker;
+import com.smartshop.models.Shoplist;
 import com.smartshop.models.User;
+import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
+
 @Component
+@Transactional
 public class UserTableSeeder implements Seeder {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ShoplistRepository shoplistRepository;
 
     private final Faker faker;
 
@@ -39,6 +47,12 @@ public class UserTableSeeder implements Seeder {
 
             u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
             this.userRepository.save(u);
+
+            Shoplist s = new Shoplist("Home");
+
+            s.getUsers().add(u);
+            this.shoplistRepository.save(s);
+
         }
 
     }
