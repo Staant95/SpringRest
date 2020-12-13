@@ -14,7 +14,6 @@ import java.util.Set;
 @Setter
 @Getter
 @NoArgsConstructor
-//@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,property = "id")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

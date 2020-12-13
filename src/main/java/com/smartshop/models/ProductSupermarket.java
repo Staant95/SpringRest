@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -16,14 +18,16 @@ import java.util.Objects;
 public class ProductSupermarket implements Serializable {
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
+    @Fetch(FetchMode.JOIN)
     @JsonBackReference("productSupermarkets")
     private Product product;
 
 
     @Id
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne()
     @JsonBackReference("supermarketProducts")
+    @Fetch(FetchMode.JOIN)
     private Supermarket supermarket;
 
     @Column(nullable = false)

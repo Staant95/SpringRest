@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @Getter
 @NoArgsConstructor
-public class ProductId {
+public class ProductAndPrice {
 
 
     private Long productId;

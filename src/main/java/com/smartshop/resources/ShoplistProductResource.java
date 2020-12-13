@@ -1,17 +1,14 @@
 package com.smartshop.resources;
 
-import com.smartshop.dto.ProductDto;
 import com.smartshop.dto.ProductShoplistDto;
-import com.smartshop.dtoMappers.ProductMapper;
 import com.smartshop.dtoMappers.ProductShoplistMapper;
 import com.smartshop.models.Product;
 import com.smartshop.models.ProductShoplist;
 import com.smartshop.models.Shoplist;
-import com.smartshop.models.requestBody.ProductId;
+import com.smartshop.models.requestBody.ProductAndPrice;
 import com.smartshop.models.requestBody.ProductQuantity;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @RestController
@@ -55,11 +51,11 @@ public class ShoplistProductResource {
     @PostMapping
     public ResponseEntity store(
             @PathVariable("shoplist") Long id,
-            @RequestBody ProductId productId
+            @RequestBody ProductAndPrice productAndPrice
     ) {
 
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        Optional<Product> product = this.productRepository.findById(productId.getProductId());
+        Optional<Product> product = this.productRepository.findById(productAndPrice.getProductId());
         if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
 
         ProductShoplist ps = new ProductShoplist();
