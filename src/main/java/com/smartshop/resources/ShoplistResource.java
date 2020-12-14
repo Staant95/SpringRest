@@ -2,14 +2,12 @@ package com.smartshop.resources;
 
 import com.smartshop.dto.ShoplistDto;
 import com.smartshop.dtoMappers.ShoplistMapper;
-import com.smartshop.models.BestSupermarket;
-import com.smartshop.models.Position;
-import com.smartshop.models.Shoplist;
-import com.smartshop.models.Supermarket;
+import com.smartshop.models.*;
 import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.SupermarketRepository;
-import com.smartshop.services.DistanceBetweenTwoPoints;
-import org.apache.coyote.Response;
+import com.smartshop.services.GeolocationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +33,8 @@ public class ShoplistResource {
     private ShoplistMapper shoplistMapper;
 
     @Autowired
-    private DistanceBetweenTwoPoints distanceBetweenTwoPoints;
+    private GeolocationService geolocationService;
+
 
     @GetMapping
     public ResponseEntity<Set<ShoplistDto>> index() {
@@ -62,7 +61,7 @@ public class ShoplistResource {
     @GetMapping("/{shoplist}")
     public ResponseEntity<ShoplistDto> show(@PathVariable("shoplist") Long id) {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
+        if (shoplist.isEmpty()) return ResponseEntity.notFound().build();
 
         return ResponseEntity.ok(this.shoplistMapper.toDto(shoplist.get()));
 
@@ -71,7 +70,7 @@ public class ShoplistResource {
     @DeleteMapping("/{shoplist}")
     public ResponseEntity<?> destroy(@PathVariable("shoplist") Long id) {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
+        if (shoplist.isEmpty()) return ResponseEntity.notFound().build();
 
         this.shoplistRepository.delete(shoplist.get());
 
@@ -82,22 +81,43 @@ public class ShoplistResource {
     @GetMapping("/{shoplist}/best")
     public ResponseEntity getBestSupermarket(@PathVariable("shoplist") Long id,
                                              @RequestBody Optional<Position> userPosition) {
-        String[] queryResults = this.shoplistRepository.getBestSupermarket(id)[0].split(",");
-        BestSupermarket supermarket = new BestSupermarket();
 
-        // this.distanceBetweenTwoPoints.calculateInKm(userPosition, supermarket.getPosition())
+        // unit is KM, -> at max 30km away from user
+        double defaultMaxRange = 30.0;
 
-        Supermarket best = this.supermarketRepository.findById(Long.parseLong(queryResults[0])).get();
+        // get only IDs
+        List<Supermarket> supermarketList = this.supermarketRepository.findAll();
+        List<Long> inRangeSupermarketsId;
 
-        supermarket.setId(best.getId());
-        supermarket.setName(best.getName());
-        supermarket.setTotal(Double.parseDouble(queryResults[1]));
+
+        if (userPosition.isPresent()) {
+            Position position = userPosition.get();
+
+            inRangeSupermarketsId = this.geolocationService
+                                    .filterSupermarketsByDistance(position, supermarketList)
+                                    .stream()
+                                    .map(supermarket -> supermarket.getId())
+                                    .collect(Collectors.toList());
+
+            if(inRangeSupermarketsId.size() == 0) {
+                return ResponseEntity.ok(new MessageResponse("Could not find any supermarket in that range. Please try a bigger range"));
+            }
+
+            return ResponseEntity.ok(
+                    this.shoplistRepository.getBestSupermarket(id, inRangeSupermarketsId)
+            );
+        }
+
+        inRangeSupermarketsId = supermarketList
+                                .stream()
+                                .map(supermarket -> supermarket.getId())
+                                .collect(Collectors.toList());
 
         return ResponseEntity.ok(
-               supermarket
+                this.shoplistRepository.getBestSupermarket(id, inRangeSupermarketsId)
         );
-    }
 
+    }
 
 
 }

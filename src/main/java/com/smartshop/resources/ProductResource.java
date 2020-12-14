@@ -3,6 +3,7 @@ package com.smartshop.resources;
 import com.smartshop.dto.ProductDto;
 import com.smartshop.dtoMappers.ProductMapper;
 import com.smartshop.models.Product;
+import com.smartshop.models.requestBody.ProductSearchTerm;
 import com.smartshop.repositories.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ public class ProductResource {
 
     @Autowired
     private ProductMapper productMapper;
+
 
     @GetMapping
     public ResponseEntity<List<ProductDto>> index() {
@@ -58,6 +60,16 @@ public class ProductResource {
         this.productRepository.delete(product.get());
 
         return ResponseEntity.noContent().build();
+    }
+
+
+    @GetMapping("/search")
+    public ResponseEntity<List<ProductDto>> search(@RequestBody ProductSearchTerm term) {
+
+        return ResponseEntity.ok(
+                productMapper.toDtoList(this.productRepository.findByNameStartsWith(term.getSearchTerm()))
+        );
+
     }
 
 }

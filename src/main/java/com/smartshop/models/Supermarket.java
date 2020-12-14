@@ -8,8 +8,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -26,6 +28,13 @@ public class Supermarket {
 
     private String name;
 
+    @Column(nullable = false)
+    private double latitude;
+
+    @Column(nullable = false)
+    private double longitude;
+
+
     @JsonManagedReference("supermarketProducts")
     @OneToMany(
             mappedBy = "supermarket",
@@ -35,8 +44,10 @@ public class Supermarket {
 
 
 
-    public Supermarket(String name) {
+    public Supermarket(String name, double latitude, double longitude) {
         this.name = name;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     @Override

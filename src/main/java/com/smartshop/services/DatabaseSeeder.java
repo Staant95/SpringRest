@@ -30,17 +30,10 @@ public class DatabaseSeeder {
     }
 
 
-
     public void seed() {
 
-        for(Seeder s: seederList) {
-
-            s.run();
-
-        }
+        seederList.forEach(Seeder::run);
 
     }
-
-
 
 }

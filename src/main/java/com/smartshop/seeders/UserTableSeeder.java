@@ -48,6 +48,7 @@ public class UserTableSeeder implements Seeder {
             u.setPassword(new BCryptPasswordEncoder().encode(u.getPassword()));
             this.userRepository.save(u);
 
+            // Create and attach a shoplist to every user
             Shoplist s = new Shoplist("Home");
 
             s.getUsers().add(u);

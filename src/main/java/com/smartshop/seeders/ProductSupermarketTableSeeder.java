@@ -5,11 +5,8 @@ import com.smartshop.models.ProductSupermarket;
 import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.Random;
 
@@ -20,6 +17,7 @@ public class ProductSupermarketTableSeeder implements Seeder {
     private final SupermarketRepository supermarketRepository;
 
     private final ProductRepository productRepository;
+
 
     public ProductSupermarketTableSeeder(
             SupermarketRepository supermarketRepository,
