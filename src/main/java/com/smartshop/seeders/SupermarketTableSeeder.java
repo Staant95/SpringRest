@@ -25,6 +25,7 @@ public class SupermarketTableSeeder implements Seeder {
     public void run() {
 
         List<Supermarket> supermarketList = new ArrayList<>();
+//        supermarketList.add(new Supermarket("Coop", 42.4080161, 12.8498633));
         supermarketList.add(new Supermarket("Conad", 42.405139, 12.865847));
         supermarketList.add(new Supermarket("Carrefour", 42.409771, 12.883291));
 

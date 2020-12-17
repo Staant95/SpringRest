@@ -1,20 +1,20 @@
 package com.smartshop.resources;
 
 
-import com.smartshop.dto.ShoplistDto;
 import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
 import com.smartshop.models.Shoplist;
 import com.smartshop.models.User;
-import com.smartshop.models.requestBody.UserId;
 import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.UserRepository;
-import org.apache.coyote.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,6 +28,8 @@ public class ShoplistUserResource {
 
     @Autowired
     private UserRepository userRepository;
+
+    private final Logger logger = LoggerFactory.getLogger(ShoplistUserResource.class);
 
     @Autowired
     private UserMapper userMapper;
@@ -45,18 +47,23 @@ public class ShoplistUserResource {
         return ResponseEntity.ok(result);
     }
 
-    // attach user to shoplist
-    @PostMapping
+
+    @PostMapping("/subscribe")
     public ResponseEntity<List<UserDto>> store(
             @PathVariable("shoplist") Long id,
-            @RequestBody UserId user) {
+            Principal principal) {
 
+        // CHECK IF USER IS ALREADY IN THAT LIST
+
+        Optional<User> loggedUser = this.userRepository.findByEmail(principal.getName());
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        Optional<User> u = this.userRepository.findById(user.getUserId());
 
-        if( !(shoplist.isPresent() && u.isPresent()) ) return ResponseEntity.notFound().build();
 
-        shoplist.get().getUsers().add(u.get());
+        if(shoplist.isEmpty() || loggedUser.isEmpty()) return ResponseEntity.notFound().build();
+
+        logger.info("CURRENT USER -> " + principal.getName());
+
+        shoplist.get().getUsers().add(loggedUser.get());
         this.shoplistRepository.flush();
 
         List<UserDto> membersOfList = this.userMapper.toDtoList(
@@ -66,6 +73,24 @@ public class ShoplistUserResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(membersOfList);
     }
 
+    @DeleteMapping("/unsubscribe")
+    public ResponseEntity<ResponseStatus> destroy(
+            @PathVariable("shoplist") Long id,
+            Principal principal) {
 
+        if(principal.getName() == null) return ResponseEntity.notFound().build();
+        // I am sure I have the user, otherwise the request would have been blocked by JWT_Filter
+        User loggedUser = this.userRepository.findByEmail(principal.getName()).get();
+        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
+
+        if (shoplist.isEmpty()) return ResponseEntity.notFound().build();
+
+        logger.info("CURRENT USER -> " +  principal.getName());
+
+        shoplist.get().getUsers().remove(loggedUser);
+        this.shoplistRepository.flush();
+
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
 
 }

@@ -1,6 +1,5 @@
 package com.smartshop.resources;
 
-import com.smartshop.exceptionHandlers.NotFoundException;
 import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.SupermarketRepository;
 import org.springframework.beans.factory.annotation.Autowired;
