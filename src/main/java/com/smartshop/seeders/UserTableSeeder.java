@@ -56,6 +56,13 @@ public class UserTableSeeder implements Seeder {
 
         }
 
+        User me = new User("Stas", "Antokhi", "stas@gmail.com", new BCryptPasswordEncoder().encode("secret"));
+        this.userRepository.save(me);
+        Shoplist s = new Shoplist("Natale");
+        s.getUsers().add(me);
+        this.shoplistRepository.save(s);
+
+
     }
 
 }

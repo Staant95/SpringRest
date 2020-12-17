@@ -3,6 +3,7 @@ package com.smartshop.resources;
 
 import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
+import com.smartshop.models.MessageResponse;
 import com.smartshop.models.Shoplist;
 import com.smartshop.models.User;
 import com.smartshop.repositories.ShoplistRepository;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -53,21 +55,22 @@ public class ShoplistUserResource {
             @PathVariable("shoplist") Long id,
             Principal principal) {
 
-        // CHECK IF USER IS ALREADY IN THAT LIST
-
+        // I am sure I have the user, otherwise the request would have been blocked by JWT_Filter
         Optional<User> loggedUser = this.userRepository.findByEmail(principal.getName());
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
 
-
         if(shoplist.isEmpty() || loggedUser.isEmpty()) return ResponseEntity.notFound().build();
 
-        logger.info("CURRENT USER -> " + principal.getName());
+        // Check if the user is already in the list, if true return the list of user
+        if(shoplist.get().getUsers().contains(loggedUser.get()))
+            return ResponseEntity.ok(this.userMapper.toDtoList(new ArrayList<>(shoplist.get().getUsers())));
 
         shoplist.get().getUsers().add(loggedUser.get());
+
         this.shoplistRepository.flush();
 
         List<UserDto> membersOfList = this.userMapper.toDtoList(
-                shoplist.get().getUsers().stream().collect(Collectors.toList())
+                new ArrayList<>(shoplist.get().getUsers())
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(membersOfList);
@@ -78,7 +81,6 @@ public class ShoplistUserResource {
             @PathVariable("shoplist") Long id,
             Principal principal) {
 
-        if(principal.getName() == null) return ResponseEntity.notFound().build();
         // I am sure I have the user, otherwise the request would have been blocked by JWT_Filter
         User loggedUser = this.userRepository.findByEmail(principal.getName()).get();
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);

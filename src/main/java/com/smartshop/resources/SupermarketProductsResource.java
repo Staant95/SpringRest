@@ -22,17 +22,21 @@ import java.util.stream.Collectors;
 @RequestMapping("supermarkets/{supermarket}/products")
 public class SupermarketProductsResource {
 
-    @Autowired
-    private SupermarketRepository supermarketRepository;
+    private final SupermarketRepository supermarketRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private ProductSupermarketMapper productSupermarketMapper;
+    private final ProductSupermarketMapper productSupermarketMapper;
 
-    @Autowired
-    private ProductMapper productMapper;
+    public SupermarketProductsResource(SupermarketRepository supermarketRepository,
+                                       ProductRepository productRepository,
+                                       ProductSupermarketMapper productSupermarketMapper) {
+
+        this.supermarketRepository = supermarketRepository;
+        this.productRepository = productRepository;
+        this.productSupermarketMapper = productSupermarketMapper;
+    }
+
 
     @GetMapping
     public ResponseEntity<List<ProductSupermarketDto>> index(

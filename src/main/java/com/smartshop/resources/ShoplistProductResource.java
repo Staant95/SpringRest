@@ -5,15 +5,18 @@ import com.smartshop.dtoMappers.ProductShoplistMapper;
 import com.smartshop.models.Product;
 import com.smartshop.models.ProductShoplist;
 import com.smartshop.models.Shoplist;
+import com.smartshop.models.requestBody.EntityID;
 import com.smartshop.models.requestBody.ProductAndPrice;
 import com.smartshop.models.requestBody.ProductQuantity;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,14 +25,22 @@ import java.util.stream.Collectors;
 @RequestMapping("/shoplists/{shoplist}/products")
 public class ShoplistProductResource {
 
-    @Autowired
-    private ShoplistRepository shoplistRepository;
+    private final ShoplistRepository shoplistRepository;
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
 
-    @Autowired
-    private ProductShoplistMapper productShoplistMapper;
+    private final ProductShoplistMapper productShoplistMapper;
+
+    private final Logger logger = LoggerFactory.getLogger(ShoplistProductResource.class);
+
+    public ShoplistProductResource(ShoplistRepository shoplistRepository,
+                                   ProductRepository productRepository,
+                                   ProductShoplistMapper productShoplistMapper) {
+
+        this.shoplistRepository = shoplistRepository;
+        this.productRepository = productRepository;
+        this.productShoplistMapper = productShoplistMapper;
+    }
 
 
     @GetMapping
@@ -44,19 +55,48 @@ public class ShoplistProductResource {
                 .map(productShoplistMapper::toDto)
                 .collect(Collectors.toList());
 
+
         return ResponseEntity.ok(products);
     }
 
 
     @PostMapping
-    public ResponseEntity store(
+    public ResponseEntity<?> store(
             @PathVariable("shoplist") Long id,
-            @RequestBody ProductAndPrice productAndPrice
+            @RequestBody EntityID entity
     ) {
 
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        Optional<Product> product = this.productRepository.findById(productAndPrice.getProductId());
-        if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
+        Optional<Product> product = this.productRepository.findById(entity.getId());
+
+        if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.notFound().build();
+
+        // check if the product is already in the list, if true increment the quantity by 1
+        long containsProduct = shoplist.get().getProducts().stream()
+                .filter(ps -> ps.getProduct().getId() == product.get().getId())
+                .count();
+
+        if(containsProduct > 0) {
+
+            int quantity = shoplist.get().getProducts()
+                    .stream()
+                    .filter(ps -> ps.getProduct().getId() == product.get().getId())
+                    .map(ProductShoplist::getQuantity)
+                    .findFirst()
+                    .orElse(1) + 1;
+
+            this.shoplistRepository.updateQuantity(
+                    product.get().getId(),
+                    shoplist.get().getId(),
+                    quantity
+                    );
+
+            return ResponseEntity.ok(
+                    this.productShoplistMapper.toDto(
+                            new ProductShoplist(product.get(), shoplist.get(), quantity)
+                    )
+            );
+        }
 
         ProductShoplist ps = new ProductShoplist();
         ps.setProduct(product.get());
@@ -66,20 +106,14 @@ public class ShoplistProductResource {
         product.get().getShoplists().add(ps);
 
         this.shoplistRepository.flush();
+        ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
 
-        ProductShoplistDto products =  shoplist.get().getProducts()
-                .stream()
-                .filter(el -> el.getProduct().getId().equals(product.get().getId()))
-                .map(productShoplistMapper::toDto)
-                .collect(Collectors.toList())
-                .get(0);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(products);
+        return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
     }
 
     @PutMapping("/{product}")
-    public ResponseEntity update(
+    public ResponseEntity<?> update(
             @PathVariable("shoplist") Long shoplistId,
             @PathVariable("product") Long productId,
             @RequestBody ProductQuantity p
@@ -114,6 +148,7 @@ public class ShoplistProductResource {
 
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(shoplistId);
         Optional<Product> product = this.productRepository.findById(productId);
+
         if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
 
         for(ProductShoplist p : shoplist.get().getProducts()) {
@@ -124,7 +159,7 @@ public class ShoplistProductResource {
             }
         }
 
-        return ResponseEntity.ok(null);
+        return ResponseEntity.noContent().build();
     }
 
 

@@ -7,6 +7,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UserId {
-    private Long userId;
+public class EntityID {
+
+    private Long id;
+
 }
