@@ -1,68 +1,41 @@
 package com.smartshop.resources;
 
 
-import com.smartshop.dto.ProductSupermarketDto;
-import com.smartshop.dto.UserDto;
-import com.smartshop.dtoMappers.ProductSupermarketMapper;
-import com.smartshop.dtoMappers.UserMapper;
-import com.smartshop.models.*;
-import com.smartshop.repositories.*;
 import com.smartshop.services.SsePushNotification;
-import net.bytebuddy.implementation.bind.annotation.Super;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-import javax.persistence.PreRemove;
-import javax.validation.Valid;
-import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Collectors;
 
 
 @RestController
 @RequestMapping("/test")
+@Slf4j
 public class Test {
 
-    private final Map<String, List<SseEmitter>> clients = new ConcurrentHashMap<>();
+    private final SsePushNotification pushNotification;
+
+    public Test(SsePushNotification pushNotification) {
+        this.pushNotification = pushNotification;
+    }
 
 
     @GetMapping("/subscribe")
     @CrossOrigin
     public SseEmitter subscribe(@RequestParam("topic") String[] topics)  {
+        log.info("Client connected");
+        final SseEmitter client = new SseEmitter(Long.MAX_VALUE);
 
-        final SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        for(String topic: topics)
+            this.pushNotification.subscribeClientToTopic(client, topic);
 
-        try {
-            emitter.send(SseEmitter.event().name("INIT"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         // remove user subscribed to a topic
-        emitter.onCompletion(() -> {
-            for(String topic: topics) {
-                if (clients.containsKey(topic)) {
-                    clients.get(topic).remove(emitter);
-                }
-            }
+        client.onCompletion(() -> {
+            for(String topic: topics)
+                this.pushNotification.unsubscribeClientFromTopic(client, topic);
         });
 
-        for(String topic : topics) {
-            if (!clients.containsKey(topic))
-                clients.put(topic, new CopyOnWriteArrayList<>());
-
-            clients.get(topic).add(emitter);
-        }
-
-        return emitter;
+        return client;
     }
 
 
@@ -70,17 +43,8 @@ public class Test {
     @CrossOrigin
     public String list12(@RequestBody String notification) {
 
-
-        if (!clients.containsKey(notification))
-            clients.put(notification, new CopyOnWriteArrayList<>());
-
-        for(SseEmitter c : clients.get(notification)) {
-            try {
-                c.send(SseEmitter.event().name(notification).data(notification));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        this.pushNotification.sendByTopic("List1", notification);
+        this.pushNotification.sendByTopic("List5", "DAJEEEEEEEEEEEEEEEE");
 
        return notification;
     }

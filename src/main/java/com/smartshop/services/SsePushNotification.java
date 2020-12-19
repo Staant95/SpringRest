@@ -1,15 +1,10 @@
 package com.smartshop.services;
 
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,37 +14,45 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class SsePushNotification {
 
-    //thread safe map implementation
-    // key -> shoplistId, value
-//    final Map<SseEmitter, ?> emitters = new ConcurrentHashMap<>();
+    private final Map<String, List<SseEmitter>> clients = new ConcurrentHashMap<>();
 
-    public final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-    public static int count = 0;
 
-    @Async
-    public void sendNotification(String notification) {
+    public void subscribeClientToTopic(SseEmitter client, String topic) {
 
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(notification);
-            } catch (IOException e) {
+        if (!clients.containsKey(topic))
+            clients.put(topic, new CopyOnWriteArrayList<>());
 
-                log.debug("IOException occured");
+        clients.get(topic).add(client);
+
+    }
+
+    public void unsubscribeClientFromTopic(SseEmitter client, String topic) {
+
+        if(clients.containsKey(topic))
+            clients.get(topic).removeIf(c -> c.equals(client));
+
+    }
+
+
+    // should create a class for notification with type, message, date
+    public void sendByTopic(String topic, String notification) {
+
+        if(clients.containsKey(topic)) {
+
+            for(SseEmitter client: clients.get(topic)) {
+                try {
+                    client.send(SseEmitter.event().name(topic).data(notification));
+                } catch (IOException e) {
+                    log.debug("IOException during sending...");
+                    e.printStackTrace();
+                }
             }
-        });
 
-
-
+        }
     }
 
 
 
-    public void addEmitter(SseEmitter emitter) {
-        emitters.add(emitter);
-    }
 
-    public void removeEmitter(SseEmitter emitter) {
-        emitters.remove(emitter);
-    }
 }
 
