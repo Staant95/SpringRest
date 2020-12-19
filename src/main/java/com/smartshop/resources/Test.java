@@ -1,6 +1,8 @@
 package com.smartshop.resources;
 
 
+import com.smartshop.models.Notification;
+import com.smartshop.models.NotificationAction;
 import com.smartshop.services.SsePushNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -41,10 +43,11 @@ public class Test {
 
     @PostMapping("/notification")
     @CrossOrigin
-    public String list12(@RequestBody String notification) {
+    public Notification list12(@RequestBody String message) {
 
+        Notification notification = new Notification(message, NotificationAction.UPDATED);
         this.pushNotification.sendByTopic("List1", notification);
-        this.pushNotification.sendByTopic("List5", "DAJEEEEEEEEEEEEEEEE");
+
 
        return notification;
     }

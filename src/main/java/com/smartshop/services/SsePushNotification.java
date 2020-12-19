@@ -1,5 +1,6 @@
 package com.smartshop.services;
 
+import com.smartshop.models.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -35,7 +36,7 @@ public class SsePushNotification {
 
 
     // should create a class for notification with type, message, date
-    public void sendByTopic(String topic, String notification) {
+    public void sendByTopic(String topic, Notification notification) {
 
         if(clients.containsKey(topic)) {
 
@@ -49,6 +50,7 @@ public class SsePushNotification {
             }
 
         }
+
     }
 
 
