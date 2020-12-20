@@ -17,6 +17,11 @@ public class SsePushNotification {
 
     private final Map<String, List<SseEmitter>> clients = new ConcurrentHashMap<>();
 
+    public boolean topicHasAnySubscriber(String topic) {
+        if(clients.containsKey(topic))
+            return clients.get(topic).size() > 0;
+        return false;
+    }
 
     public void subscribeClientToTopic(SseEmitter client, String topic) {
 
@@ -24,7 +29,7 @@ public class SsePushNotification {
             clients.put(topic, new CopyOnWriteArrayList<>());
 
         clients.get(topic).add(client);
-
+        log.info("MAP SIZE: " + clients.get(topic).size());
     }
 
     public void unsubscribeClientFromTopic(SseEmitter client, String topic) {
@@ -35,7 +40,7 @@ public class SsePushNotification {
     }
 
 
-    // should create a class for notification with type, message, date
+
     public void sendByTopic(String topic, Notification notification) {
 
         if(clients.containsKey(topic)) {
@@ -43,14 +48,16 @@ public class SsePushNotification {
             for(SseEmitter client: clients.get(topic)) {
                 try {
                     client.send(SseEmitter.event().name(topic).data(notification));
+                    clients.get(topic).clear();
+                    client.complete();
                 } catch (IOException e) {
-                    log.debug("IOException during sending...");
-                    e.printStackTrace();
+                    client.completeWithError(e);
+                    log.info("IOException during sending...");
                 }
             }
 
         }
-
+        log.info("MAP SIZE: " + clients.get(topic).size());
     }
 
 

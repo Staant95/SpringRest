@@ -43,13 +43,14 @@ public class Test {
 
     @PostMapping("/notification")
     @CrossOrigin
-    public Notification list12(@RequestBody String message) {
+    public void list12(@RequestBody String message) {
 
-        Notification notification = new Notification(message, NotificationAction.UPDATED);
-        this.pushNotification.sendByTopic("List1", notification);
+        if(this.pushNotification.topicHasAnySubscriber("List1")) {
 
+            Notification notification = new Notification(message, NotificationAction.UPDATED);
+            this.pushNotification.sendByTopic("List1", notification);
+        }
 
-       return notification;
     }
 
 
