@@ -22,7 +22,6 @@ public class Test {
 
 
     @GetMapping("/subscribe")
-    @CrossOrigin
     public SseEmitter subscribe(@RequestParam("topic") String[] topics)  {
         log.info("Client connected");
         final SseEmitter client = new SseEmitter(Long.MAX_VALUE);
@@ -37,18 +36,22 @@ public class Test {
                 this.pushNotification.unsubscribeClientFromTopic(client, topic);
         });
 
+        client.onTimeout(() -> {
+            for(String topic: topics)
+                this.pushNotification.unsubscribeClientFromTopic(client, topic);
+        });
+
         return client;
     }
 
 
     @PostMapping("/notification")
-    @CrossOrigin
     public void list12(@RequestBody String message) {
 
         if(this.pushNotification.topicHasAnySubscriber("List1")) {
-
-            Notification notification = new Notification(message, NotificationAction.UPDATED);
+            Notification notification = new Notification(message.substring(9, message.length() - 2), NotificationAction.UPDATED);
             this.pushNotification.sendByTopic("List1", notification);
+
         }
 
     }

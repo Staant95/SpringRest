@@ -7,12 +7,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 public class SmartshopApplication implements CommandLineRunner {
 
-    @Autowired
-    private DatabaseSeeder seeder;
+    private final DatabaseSeeder seeder;
+
+    public SmartshopApplication(DatabaseSeeder seeder) {
+        this.seeder = seeder;
+    }
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -23,6 +28,18 @@ public class SmartshopApplication implements CommandLineRunner {
 
         SpringApplication.run(SmartshopApplication.class, args);
 
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedMethods("*")
+                        .allowedOrigins("*");
+            }
+        };
     }
 
 

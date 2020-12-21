@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,41 +24,48 @@ public class SsePushNotification {
         return false;
     }
 
-    public void subscribeClientToTopic(SseEmitter client, String topic) {
+    public void subscribeClientToTopic(final SseEmitter client, String topic) {
 
         if (!clients.containsKey(topic))
-            clients.put(topic, new CopyOnWriteArrayList<>());
+            clients.put(topic, new ArrayList<>());
 
         clients.get(topic).add(client);
-        log.info("MAP SIZE: " + clients.get(topic).size());
+        log.info("Subscribed client to " + topic + " topic");
+        log.info("Map size for " + topic + " is " + clients.get(topic).size());
     }
 
-    public void unsubscribeClientFromTopic(SseEmitter client, String topic) {
+    public void unsubscribeClientFromTopic(final SseEmitter client, String topic) {
 
-        if(clients.containsKey(topic))
+        if(clients.containsKey(topic)) {
+
+            if(clients.get(topic).size() == 0) clients.remove(topic);
+
             clients.get(topic).removeIf(c -> c.equals(client));
 
-    }
+            log.info("Unsubscribed client. Map size for " + topic + " is " + clients.get(topic).size());
+        }
 
+    }
 
 
     public void sendByTopic(String topic, Notification notification) {
-
+        List<SseEmitter> deadClients = new CopyOnWriteArrayList<>();
         if(clients.containsKey(topic)) {
 
             for(SseEmitter client: clients.get(topic)) {
                 try {
-                    client.send(SseEmitter.event().name(topic).data(notification));
-                    clients.get(topic).clear();
-                    client.complete();
+                    client.send(SseEmitter.event()
+                            .name(topic)
+                            .data(notification)
+                    );
                 } catch (IOException e) {
-                    client.completeWithError(e);
-                    log.info("IOException during sending...");
+                    deadClients.add(client);
                 }
             }
 
         }
-        log.info("MAP SIZE: " + clients.get(topic).size());
+        log.info("Message sended... Clients map size -> " + clients.get(topic).size());
+        this.clients.get(topic).removeAll(deadClients);
     }
 
 
