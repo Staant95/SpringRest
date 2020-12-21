@@ -23,6 +23,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/supermarkets/**",
             "/products/**",
             "/users/**",
+            "/shoplists/**"
     };
 
     private final CustomUserDetailsService userDetailsService;

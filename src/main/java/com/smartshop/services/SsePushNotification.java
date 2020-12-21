@@ -1,6 +1,6 @@
 package com.smartshop.services;
 
-import com.smartshop.models.Notification;
+import com.smartshop.models.responses.Notification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -16,46 +16,40 @@ import java.util.concurrent.CopyOnWriteArrayList;
 @Slf4j
 public class SsePushNotification {
 
-    private final Map<String, List<SseEmitter>> clients = new ConcurrentHashMap<>();
+    private final Map<Long, List<SseEmitter>> clients = new ConcurrentHashMap<>();
 
-    public boolean topicHasAnySubscriber(String topic) {
-        if(clients.containsKey(topic))
-            return clients.get(topic).size() > 0;
-        return false;
-    }
 
-    public void subscribeClientToTopic(final SseEmitter client, String topic) {
+    public void subscribeClientToTopic(final SseEmitter client, Long topic) {
 
         if (!clients.containsKey(topic))
             clients.put(topic, new ArrayList<>());
 
         clients.get(topic).add(client);
-        log.info("Subscribed client to " + topic + " topic");
-        log.info("Map size for " + topic + " is " + clients.get(topic).size());
+        log.info("Subscribed client to " + topic + " list");
     }
 
-    public void unsubscribeClientFromTopic(final SseEmitter client, String topic) {
+    public void unsubscribeClientFromTopic(final SseEmitter client, Long topic) {
 
         if(clients.containsKey(topic)) {
 
             if(clients.get(topic).size() == 0) clients.remove(topic);
 
             clients.get(topic).removeIf(c -> c.equals(client));
-
-            log.info("Unsubscribed client. Map size for " + topic + " is " + clients.get(topic).size());
         }
 
     }
 
 
-    public void sendByTopic(String topic, Notification notification) {
-        List<SseEmitter> deadClients = new CopyOnWriteArrayList<>();
-        if(clients.containsKey(topic)) {
+    public void sendByTopic(Long listId, Notification notification) {
 
-            for(SseEmitter client: clients.get(topic)) {
+        List<SseEmitter> deadClients = new CopyOnWriteArrayList<>();
+
+        if(clients.containsKey(listId)) {
+
+            for(SseEmitter client: clients.get(listId)) {
                 try {
                     client.send(SseEmitter.event()
-                            .name(topic)
+                            .name(String.valueOf(listId))
                             .data(notification)
                     );
                 } catch (IOException e) {
@@ -64,8 +58,8 @@ public class SsePushNotification {
             }
 
         }
-        log.info("Message sended... Clients map size -> " + clients.get(topic).size());
-        this.clients.get(topic).removeAll(deadClients);
+        log.info("Client count on topic " + clients.get(listId).size());
+        this.clients.get(listId).removeAll(deadClients);
     }
 
 

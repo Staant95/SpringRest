@@ -2,27 +2,26 @@ package com.smartshop.resources;
 
 import com.smartshop.dto.ProductShoplistDto;
 import com.smartshop.dtoMappers.ProductShoplistMapper;
-import com.smartshop.models.Product;
-import com.smartshop.models.ProductShoplist;
-import com.smartshop.models.Shoplist;
+import com.smartshop.models.*;
 import com.smartshop.models.requestBody.EntityID;
-import com.smartshop.models.requestBody.ProductAndPrice;
 import com.smartshop.models.requestBody.ProductQuantity;
+import com.smartshop.models.responses.Notification;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.smartshop.services.SsePushNotification;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.transaction.Transactional;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/shoplists/{shoplist}/products")
+@Slf4j
 public class ShoplistProductResource {
 
     private final ShoplistRepository shoplistRepository;
@@ -31,15 +30,18 @@ public class ShoplistProductResource {
 
     private final ProductShoplistMapper productShoplistMapper;
 
-    private final Logger logger = LoggerFactory.getLogger(ShoplistProductResource.class);
+    private final SsePushNotification pushNotification;
+
 
     public ShoplistProductResource(ShoplistRepository shoplistRepository,
                                    ProductRepository productRepository,
-                                   ProductShoplistMapper productShoplistMapper) {
+                                   ProductShoplistMapper productShoplistMapper,
+                                   SsePushNotification pushNotification) {
 
         this.shoplistRepository = shoplistRepository;
         this.productRepository = productRepository;
         this.productShoplistMapper = productShoplistMapper;
+        this.pushNotification = pushNotification;
     }
 
 
@@ -63,39 +65,34 @@ public class ShoplistProductResource {
     @PostMapping
     public ResponseEntity<?> store(
             @PathVariable("shoplist") Long id,
-            @RequestBody EntityID entity
+            @Valid @RequestBody EntityID productId
     ) {
-
+        // if body is not provied throws 500...
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        Optional<Product> product = this.productRepository.findById(entity.getId());
+        Optional<Product> product = this.productRepository.findById(productId.getId());
 
         if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.notFound().build();
 
         // check if the product is already in the list, if true increment the quantity by 1
-        long containsProduct = shoplist.get().getProducts().stream()
-                .filter(ps -> ps.getProduct().getId() == product.get().getId())
-                .count();
+        // one query for each product in the list..
 
-        if(containsProduct > 0) {
+        Integer productCount = this.shoplistRepository.containsProduct(shoplist.get().getId(), productId.getId());
 
-            int quantity = shoplist.get().getProducts()
-                    .stream()
-                    .filter(ps -> ps.getProduct().getId() == product.get().getId())
-                    .map(ProductShoplist::getQuantity)
-                    .findFirst()
-                    .orElse(1) + 1;
+        if(productCount > 0) {
+            int quantity = this.shoplistRepository.getProductQuantity(shoplist.get().getId(), productId.getId()) + 1;
 
-            this.shoplistRepository.updateQuantity(
-                    product.get().getId(),
-                    shoplist.get().getId(),
+            this.shoplistRepository.updateQuantity(product.get().getId(),shoplist.get().getId(),quantity);
+
+            ProductShoplistDto result = this.productShoplistMapper.toDto(new ProductShoplist(
+                    product.get(),
+                    shoplist.get(),
                     quantity
-                    );
+            ));
 
-            return ResponseEntity.ok(
-                    this.productShoplistMapper.toDto(
-                            new ProductShoplist(product.get(), shoplist.get(), quantity)
-                    )
-            );
+            Notification itemAdded = new Notification(result, NotificationAction.UPDATED);
+            this.pushNotification.sendByTopic(id, itemAdded );
+
+            return ResponseEntity.ok(result);
         }
 
         ProductShoplist ps = new ProductShoplist();
@@ -106,7 +103,11 @@ public class ShoplistProductResource {
         product.get().getShoplists().add(ps);
 
         this.shoplistRepository.flush();
+
         ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
+
+        Notification itemAdded = new Notification(result, NotificationAction.INSERTED);
+        this.pushNotification.sendByTopic(id, itemAdded );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
@@ -120,7 +121,8 @@ public class ShoplistProductResource {
             ) {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(shoplistId);
         Optional<Product> product = this.productRepository.findById(productId);
-        if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
+
+        if(shoplist.isEmpty() || product.isEmpty() ) return ResponseEntity.notFound().build();
 
         this.shoplistRepository.updateQuantity(
                 productId,
@@ -141,7 +143,7 @@ public class ShoplistProductResource {
 
 
     @DeleteMapping("/{product}")
-    public ResponseEntity destroy(
+    public ResponseEntity<ResponseStatus> destroy(
             @PathVariable("shoplist") Long shoplistId,
             @PathVariable("product") Long productId
     ) {
@@ -151,6 +153,11 @@ public class ShoplistProductResource {
 
         if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
 
+        ProductShoplistDto result = this.productShoplistMapper.toDto(new ProductShoplist(
+                product.get(),
+                shoplist.get()
+        ));
+
         for(ProductShoplist p : shoplist.get().getProducts()) {
             if(productId.equals(p.getProduct().getId())) {
                 shoplist.get().getProducts().remove(p);
@@ -158,6 +165,9 @@ public class ShoplistProductResource {
                 this.shoplistRepository.saveAndFlush(shoplist.get());
             }
         }
+
+        Notification itemAdded = new Notification(result,NotificationAction.DELETED);
+        this.pushNotification.sendByTopic(shoplistId, itemAdded );
 
         return ResponseEntity.noContent().build();
     }

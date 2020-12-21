@@ -30,4 +30,19 @@ public interface ShoplistRepository extends JpaRepository<Shoplist, Long> {
     //BestSupermarket must be an interface
     List<BestSupermarket> getBestSupermarket(@Param("shoplist") Long shoplist, @Param("supermarkets")List<Long> supermarkets);
 
+
+    @Transactional
+    @Query(
+            value = "select count(*) from product_shoplist where shoplist_id =:shoplistId and product_id =:productId",
+            nativeQuery = true
+    )
+    Integer containsProduct(@Param("shoplistId") Long shoplistId, @Param("productId") Long productId);
+
+    @Transactional
+    @Query(
+            value = "select quantity from product_shoplist where shoplist_id =:shoplistId and product_id =:productId",
+            nativeQuery = true
+    )
+    Integer getProductQuantity(@Param("shoplistId") Long shoplistId, @Param("productId") Long productId);
+
 }

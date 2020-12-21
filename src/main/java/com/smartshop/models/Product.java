@@ -43,6 +43,10 @@ public class Product {
         this.name = name;
     }
 
+    public Product(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
 
     @Override
     public boolean equals(Object o) {

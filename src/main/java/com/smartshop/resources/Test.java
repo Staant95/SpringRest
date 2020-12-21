@@ -1,8 +1,6 @@
 package com.smartshop.resources;
 
 
-import com.smartshop.models.Notification;
-import com.smartshop.models.NotificationAction;
 import com.smartshop.services.SsePushNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -22,39 +20,22 @@ public class Test {
 
 
     @GetMapping("/subscribe")
-    public SseEmitter subscribe(@RequestParam("topic") String[] topics)  {
+    public SseEmitter subscribe(@RequestParam("listId") Long listId)  {
+
         log.info("Client connected");
         final SseEmitter client = new SseEmitter(Long.MAX_VALUE);
 
-        for(String topic: topics)
-            this.pushNotification.subscribeClientToTopic(client, topic);
+        this.pushNotification.subscribeClientToTopic(client, listId);
 
+        client.onCompletion(() -> this.pushNotification.unsubscribeClientFromTopic(client, listId));
 
-        // remove user subscribed to a topic
-        client.onCompletion(() -> {
-            for(String topic: topics)
-                this.pushNotification.unsubscribeClientFromTopic(client, topic);
-        });
+        client.onTimeout(() -> this.pushNotification.unsubscribeClientFromTopic(client, listId));
 
-        client.onTimeout(() -> {
-            for(String topic: topics)
-                this.pushNotification.unsubscribeClientFromTopic(client, topic);
-        });
+        client.onError((err) -> this.pushNotification.unsubscribeClientFromTopic(client, listId));
 
         return client;
     }
 
-
-    @PostMapping("/notification")
-    public void list12(@RequestBody String message) {
-
-        if(this.pushNotification.topicHasAnySubscriber("List1")) {
-            Notification notification = new Notification(message.substring(9, message.length() - 2), NotificationAction.UPDATED);
-            this.pushNotification.sendByTopic("List1", notification);
-
-        }
-
-    }
 
 
 }
