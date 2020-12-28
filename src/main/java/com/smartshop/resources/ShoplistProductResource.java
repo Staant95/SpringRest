@@ -89,7 +89,7 @@ public class ShoplistProductResource {
                     quantity
             ));
 
-            Notification itemAdded = new Notification(result, NotificationAction.UPDATED);
+            Notification itemAdded = new Notification(result, NotificationActionEnum.UPDATED);
             this.pushNotification.sendByTopic(id, itemAdded );
 
             return ResponseEntity.ok(result);
@@ -106,7 +106,7 @@ public class ShoplistProductResource {
 
         ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
 
-        Notification itemAdded = new Notification(result, NotificationAction.INSERTED);
+        Notification itemAdded = new Notification(result, NotificationActionEnum.INSERTED);
         this.pushNotification.sendByTopic(id, itemAdded );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
@@ -166,7 +166,7 @@ public class ShoplistProductResource {
             }
         }
 
-        Notification itemAdded = new Notification(result,NotificationAction.DELETED);
+        Notification itemAdded = new Notification(result, NotificationActionEnum.DELETED);
         this.pushNotification.sendByTopic(shoplistId, itemAdded );
 
         return ResponseEntity.noContent().build();

@@ -1,8 +1,7 @@
 package com.smartshop.models.responses;
 
 import com.smartshop.dto.ProductShoplistDto;
-import com.smartshop.models.NotificationAction;
-import com.smartshop.models.Product;
+import com.smartshop.models.NotificationActionEnum;
 import com.smartshop.models.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,17 +20,17 @@ public class Notification implements Serializable {
 
     private User by;
 
-    private NotificationAction action;
+    private NotificationActionEnum action;
 
     private Date created_at;
 
-    public Notification(ProductShoplistDto product, NotificationAction action) {
+    public Notification(ProductShoplistDto product, NotificationActionEnum action) {
         this.product = product;
         this.action = action;
         this.created_at = Date.from(Instant.now());
     }
 
-    public Notification(ProductShoplistDto product, NotificationAction action, User user) {
+    public Notification(ProductShoplistDto product, NotificationActionEnum action, User user) {
         this.product = product;
         this.action = action;
         this.created_at = Date.from(Instant.now());

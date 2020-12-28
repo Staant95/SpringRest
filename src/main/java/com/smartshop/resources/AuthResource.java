@@ -9,45 +9,51 @@ import com.smartshop.models.User;
 import com.smartshop.models.auth.AuthenticationRequest;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.services.LoginService;
-import com.smartshop.utils.ResponseMessage;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
+@Slf4j
 public class AuthResource {
 
-    @Autowired
-    private LoginService loginService;
+    private final LoginService loginService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService userDetailsService;
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+
+    public AuthResource(LoginService loginService, UserRepository userRepository, CustomUserDetailsService userDetailsService, UserMapper userMapper) {
+        this.loginService = loginService;
+        this.userRepository = userRepository;
+        this.userDetailsService = userDetailsService;
+        this.userMapper = userMapper;
+    }
 
 
     @PostMapping("/login")
     public ResponseEntity<?> loginAndCreateToken(
             @Valid @RequestBody AuthenticationRequest authenticationRequest) {
 
-        if(!this.loginService.authenticateUser(authenticationRequest))
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ResponseMessage("Email or password are incorrect"));
-
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getEmail());
 
-        User user = userRepository.findByEmail(userDetails.getUsername()).get();
+        log.info("HIT");
 
+        User user = userRepository.findByEmail(userDetails.getUsername()).get();
+        log.info("HIT");
         Token token = loginService.createToken(user, userDetails);
 
         user.addToken(token);
@@ -69,6 +75,7 @@ public class AuthResource {
                 .body(userMapper.toDto(this.userRepository.save(usr)));
 
     }
+
 
 }
 

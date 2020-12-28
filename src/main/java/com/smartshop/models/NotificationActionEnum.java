@@ -1,6 +1,6 @@
 package com.smartshop.models;
 
-public enum NotificationAction {
+public enum NotificationActionEnum {
     UPDATED,
     DELETED,
     INSERTED
