@@ -23,7 +23,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/supermarkets/**",
             "/products/**",
             "/users/**",
-            "/shoplists/**"
     };
 
     private final CustomUserDetailsService userDetailsService;
@@ -38,8 +37,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     // AuthenticanManagerBuilder configures how AuthenticaManager is going to authenticate users
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        // UserDetailsService will authenticate the user by checking if it has a token or not
-        // The password encoder is BCrypt
         auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder());
     }
 

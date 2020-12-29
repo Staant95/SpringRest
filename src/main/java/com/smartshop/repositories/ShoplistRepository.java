@@ -2,7 +2,6 @@ package com.smartshop.repositories;
 
 import com.smartshop.models.BestSupermarket;
 import com.smartshop.models.Shoplist;
-import com.smartshop.models.Supermarket;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -22,8 +21,10 @@ public interface ShoplistRepository extends JpaRepository<Shoplist, Long> {
 
     @Transactional
     @Query(
-            value = "select supermarket_id, SUM(price) as total from product_supermarket where product_id IN (" +
-                    "select product_id from product_shoplist where shoplist_id =:shoplist) AND supermarket_id IN (:supermarkets)" +
+            value = "select sup.name, sup.latitude, sup.longitude, supermarket_id, SUM(price) as total from product_supermarket " +
+                    "join supermarket as sup on sup.id = supermarket_id " +
+                    "where product_id IN (select product_id from product_shoplist where shoplist_id =:shoplist) " +
+                    "AND supermarket_id IN (:supermarkets)" +
                     " group by supermarket_id order by total ASC",
             nativeQuery = true
     )
