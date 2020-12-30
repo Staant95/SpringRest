@@ -91,6 +91,8 @@ public class ShoplistUserResource {
         shoplist.get().getUsers().remove(loggedUser);
         this.shoplistRepository.flush();
 
+        if(shoplist.get().getUsers().size() == 0) this.shoplistRepository.deleteById(id);
+
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
