@@ -9,7 +9,6 @@ import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,22 +17,24 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/shoplists/{shoplist}/users")
 public class ShoplistUserResource {
 
-    @Autowired
-    private ShoplistRepository shoplistRepository;
+    private final ShoplistRepository shoplistRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     private final Logger logger = LoggerFactory.getLogger(ShoplistUserResource.class);
 
-    @Autowired
-    private UserMapper userMapper;
+    private final UserMapper userMapper;
+
+    public ShoplistUserResource(ShoplistRepository shoplistRepository, UserRepository userRepository, UserMapper userMapper) {
+        this.shoplistRepository = shoplistRepository;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
+    }
 
     @GetMapping
     public ResponseEntity<List<UserDto>> index(@PathVariable("shoplist") Long id) {
@@ -42,7 +43,7 @@ public class ShoplistUserResource {
         if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
 
         List<UserDto> result = this.userMapper.toDtoList(
-                shoplist.get().getUsers().stream().collect(Collectors.toList())
+                new ArrayList<>(shoplist.get().getUsers())
         );
 
         return ResponseEntity.ok(result);
@@ -54,7 +55,6 @@ public class ShoplistUserResource {
             @PathVariable("shoplist") Long id,
             Principal principal) {
 
-        // I am sure I have the user, otherwise the request would have been blocked by JWT_Filter
         Optional<User> loggedUser = this.userRepository.findByEmail(principal.getName());
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
 
@@ -62,7 +62,7 @@ public class ShoplistUserResource {
 
         // Check if the user is already in the list, if true return the list of user
         if(shoplist.get().getUsers().contains(loggedUser.get()))
-            return ResponseEntity.ok(this.userMapper.toDtoList(new ArrayList<>(shoplist.get().getUsers())));
+            return ResponseEntity.noContent().build();
 
         shoplist.get().getUsers().add(loggedUser.get());
 

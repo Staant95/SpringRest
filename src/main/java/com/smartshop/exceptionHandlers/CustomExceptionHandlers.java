@@ -8,6 +8,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,13 +25,14 @@ import java.util.Map;
 public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ResponseEntity<Object> handleConstraint() {
+    public ResponseEntity<Object> handleConstraintViolation() {
 
         return new ResponseEntity(
                 new MessageResponse("Constraint violation happened"),
                 HttpStatus.CONFLICT
         );
     }
+
 
 
     @Override
@@ -49,4 +51,10 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
         return new ResponseEntity<>(new MessageResponse("Invalid data", errors), HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(value = {UsernameNotFoundException.class})
+    protected ResponseEntity<?> handleUsernameNotFoundException() {
+        return new ResponseEntity(new MessageResponse("Your token is invalid"), HttpStatus.UNAUTHORIZED);
+    }
+
 }

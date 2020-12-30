@@ -1,5 +1,6 @@
 package com.smartshop.models.responses;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ public class MessageResponse implements Serializable {
 
     private String message;
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private Map<String, String> errors;
 
 

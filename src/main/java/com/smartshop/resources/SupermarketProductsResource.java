@@ -5,13 +5,14 @@ import com.smartshop.dtoMappers.ProductSupermarketMapper;
 import com.smartshop.models.Product;
 import com.smartshop.models.ProductSupermarket;
 import com.smartshop.models.Supermarket;
-import com.smartshop.models.requestBody.ProductAndPrice;
+import com.smartshop.models.requestBody.ProductInSupermarket;
 import com.smartshop.models.responses.MessageResponse;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -57,34 +58,34 @@ public class SupermarketProductsResource {
     @PostMapping
     public ResponseEntity<?> store(
             @PathVariable("supermarket") Long supermarketId,
-            @RequestBody ProductAndPrice product) {
+            @Valid @RequestBody ProductInSupermarket product) {
 
         if(product.getPrice() == 0.0)
-            return ResponseEntity.badRequest().body(new MessageResponse("Price is required"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Price must not be 0"));
 
-        Optional<Supermarket> searchedSupermarket = this.supermarketRepository.findById(supermarketId);
+        Optional<Supermarket> optionalSupermarket = this.supermarketRepository.findById(supermarketId);
 
-        Optional<Product> searchedProduct = this.productRepository.findById(product.getProductId());
+        Optional<Product> optionalProduct = this.productRepository.findById(product.getProductId());
 
-        if(!(searchedSupermarket.isPresent() && searchedProduct.isPresent()))
+        if(optionalSupermarket.isEmpty() || optionalProduct.isEmpty())
             return ResponseEntity.notFound().build();
 
         ProductSupermarket ps = new ProductSupermarket(
-                searchedProduct.get(),
-                searchedSupermarket.get(),
+                optionalProduct.get(),
+                optionalSupermarket.get(),
                 product.getPrice()
         );
-        searchedSupermarket.get().getProducts().add(ps);
-        searchedProduct.get().getSupermarkets().add(ps);
+        optionalSupermarket.get().getProducts().add(ps);
+        optionalProduct.get().getSupermarkets().add(ps);
 
         this.productRepository.flush();
 
-        ProductSupermarketDto result = searchedSupermarket.get().getProducts()
-                .stream()
-                .filter(p -> product.getProductId().equals(p.getProduct().getId()))
-                .map(productSupermarketMapper::toDto)
-                .collect(Collectors.toList())
-                .get(0); // ho per forza l'elemento aggiunto
+//        Optional<ProductSupermarketDto> result = optionalSupermarket.get().getProducts()
+//                .stream()
+//                .filter(p -> product.getProductId().equals(p.getProduct().getId()))
+//                .map(productSupermarketMapper::toDto)
+//                .findFirst();
+        ProductSupermarketDto result = productSupermarketMapper.toDto(ps);
 
         return ResponseEntity.ok(result);
 
@@ -97,18 +98,19 @@ public class SupermarketProductsResource {
     ) {
 
         Optional<Supermarket> searchedSupermarket = this.supermarketRepository.findById(supermarketId);
+        Optional<Product> optionalProduct = this.productRepository.findById(productId);
 
-        if(searchedSupermarket.isEmpty()) return ResponseEntity.notFound().build();
+        if(searchedSupermarket.isEmpty() || optionalProduct.isEmpty()) return ResponseEntity.notFound().build();
 
-        List<ProductSupermarketDto> product = searchedSupermarket.get().getProducts()
+        Optional<ProductSupermarketDto> product = searchedSupermarket.get().getProducts()
                         .stream()
-                        .filter(prod -> productId.equals(prod.getProduct().getId()))
+                        .filter(productSupermarket -> productId.equals(productSupermarket.getProduct().getId()))
                         .map(productSupermarketMapper::toDto)
-                        .collect(Collectors.toList());
+                        .findFirst();
 
-        if(product.size() != 1) return ResponseEntity.notFound().build();
+        if(product.isEmpty()) return ResponseEntity.notFound().build();
 
-        return ResponseEntity.ok(product.get(0));
+        return ResponseEntity.ok(product.get());
     }
 
 
@@ -119,9 +121,9 @@ public class SupermarketProductsResource {
     ) {
 
         Optional<Supermarket> searchedSupermarket = this.supermarketRepository.findById(supermarketId);
-        this.productRepository.findById(productId); // is required
+        Optional<Product> optionalProduct = this.productRepository.findById(productId);
 
-        if(searchedSupermarket.isEmpty()) return ResponseEntity.notFound().build();
+        if(searchedSupermarket.isEmpty() || optionalProduct.isEmpty()) return ResponseEntity.notFound().build();
 
         for(ProductSupermarket p: searchedSupermarket.get().getProducts()) {
 
