@@ -61,7 +61,7 @@ public class SupermarketProductsResource {
             @Valid @RequestBody ProductInSupermarket product) {
 
         if(product.getPrice() == 0.0)
-            return ResponseEntity.badRequest().body(new MessageResponse("Price must not be 0"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Price must NOT be 0"));
 
         Optional<Supermarket> optionalSupermarket = this.supermarketRepository.findById(supermarketId);
 
@@ -80,11 +80,6 @@ public class SupermarketProductsResource {
 
         this.productRepository.flush();
 
-//        Optional<ProductSupermarketDto> result = optionalSupermarket.get().getProducts()
-//                .stream()
-//                .filter(p -> product.getProductId().equals(p.getProduct().getId()))
-//                .map(productSupermarketMapper::toDto)
-//                .findFirst();
         ProductSupermarketDto result = productSupermarketMapper.toDto(ps);
 
         return ResponseEntity.ok(result);

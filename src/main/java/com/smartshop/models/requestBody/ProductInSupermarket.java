@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 
 @Setter
@@ -13,10 +13,10 @@ import javax.validation.constraints.NotBlank;
 @NoArgsConstructor
 public class ProductInSupermarket {
 
-    @NotBlank(message = "Price is required")
+    @NotNull(message = "productId is required")
     private Long productId;
 
-    @NotBlank(message = "Price is required")
-    private double price;
+    @NotNull(message = "Price is required")
+    private Double price;
 
 }
