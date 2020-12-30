@@ -1,16 +1,14 @@
 package com.smartshop.resources;
 
 import com.smartshop.dto.ProductSupermarketDto;
-import com.smartshop.dtoMappers.ProductMapper;
 import com.smartshop.dtoMappers.ProductSupermarketMapper;
 import com.smartshop.models.Product;
 import com.smartshop.models.ProductSupermarket;
 import com.smartshop.models.Supermarket;
 import com.smartshop.models.requestBody.ProductAndPrice;
+import com.smartshop.models.responses.MessageResponse;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
-import com.smartshop.utils.ResponseMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,7 +60,7 @@ public class SupermarketProductsResource {
             @RequestBody ProductAndPrice product) {
 
         if(product.getPrice() == 0.0)
-            return ResponseEntity.badRequest().body(new ResponseMessage("Price is required"));
+            return ResponseEntity.badRequest().body(new MessageResponse("Price is required"));
 
         Optional<Supermarket> searchedSupermarket = this.supermarketRepository.findById(supermarketId);
 

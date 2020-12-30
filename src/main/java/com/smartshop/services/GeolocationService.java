@@ -11,17 +11,18 @@ import java.util.stream.Collectors;
 public class GeolocationService {
 
 
-    public List<Supermarket> filterSupermarketsByDistance(Position user, List<Supermarket> supermarkets) {
+
+    public List<Long> filterSupermarketsByDistance(Position source, List<Supermarket> supermarkets, double maxDistance) {
 
          return supermarkets.stream()
-                 .filter(supermarket -> isInRange(user, new Position(supermarket.getLatitude(), supermarket.getLongitude())))
+                 .filter(supermarket -> maxDistance > calculateDistanceBetweenPoints(source, new Position(supermarket.getLatitude(), supermarket.getLongitude())))
+                 .map(Supermarket::getId)
                  .collect(Collectors.toList());
-
     }
 
 
     // Haversine Formula
-    private boolean isInRange(Position source, Position destination) {
+    public double calculateDistanceBetweenPoints(Position source, Position destination) {
         final int R = 6373; // Radius of the earth
 
         double latitude = toRad(destination.getLatitude() - source.getLatitude());
@@ -33,8 +34,10 @@ public class GeolocationService {
 
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
-        return (R * c) < source.getMaxDistance();
+//        return (R * c) < source.getMaxDistance();
+        return R * c;
     }
+
 
 
     private double toRad(double value) {

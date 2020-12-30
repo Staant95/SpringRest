@@ -19,10 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -119,35 +116,37 @@ public class ShoplistResource {
 
         User user = this.userRepository.findByEmail(principal.getName()).get();
 
-        Optional<Shoplist> result = user.getShoplists().stream()
+        Optional<Shoplist> userShoplists = user.getShoplists().stream()
                 .filter(shoplist -> shoplist.getId().equals(id))
                 .findFirst();
 
-        if(result.isEmpty()) return ResponseEntity.notFound().build();
+        if (userShoplists.isEmpty()) return ResponseEntity.notFound().build();
 
         // get only IDs
         List<Supermarket> supermarketList = this.supermarketRepository.findAll();
-        List<Long> inRangeSupermarketsId;
 
+        List<Long> inRangeSupermarketsId = new ArrayList<>(this.geolocationService
+                .filterSupermarketsByDistance(userPosition, supermarketList, userPosition.getMaxDistance()));
 
-
-        inRangeSupermarketsId = this.geolocationService
-                                .filterSupermarketsByDistance(userPosition, supermarketList)
-                                .stream()
-                                .map(Supermarket::getId)
-                                .collect(Collectors.toList());
-
-        if(inRangeSupermarketsId.size() == 0) {
+        if (inRangeSupermarketsId.size() == 0) {
             return ResponseEntity.ok(new MessageResponse("Could not find any supermarket in that range. Please try a bigger range"));
         }
 
-        List<SupermarketResponse> results =  this.shoplistRepository.getBestSupermarket(result.get().getId(), inRangeSupermarketsId)
+        List<SupermarketResponse> results = this.shoplistRepository.getBestSupermarket(userShoplists.get().getId(), inRangeSupermarketsId)
                 .stream()
-                .map(current -> new SupermarketResponse(current.getSupermarket_id(),
-                                                current.getLongitude(),
-                                                current.getLatitude(),
-                                                current.getName(),
-                                                current.getTotal()))
+                .map(supermarket -> {
+                    double distance = this.geolocationService.calculateDistanceBetweenPoints(
+                            userPosition,
+                            new Position(supermarket.getLatitude(), supermarket.getLongitude()));
+
+                    return new SupermarketResponse(supermarket.getSupermarket_id(),
+                            supermarket.getLongitude(),
+                            supermarket.getLatitude(),
+                            supermarket.getName(),
+                            supermarket.getTotal(),
+                            distance);
+
+                })
                 .collect(Collectors.toList());
 
 
