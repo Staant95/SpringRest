@@ -1,7 +1,7 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.Data;
+import com.smartshop.models.responses.Token;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,14 +40,6 @@ public class User {
 
     private String role = "user";
 
-    @OneToOne(
-            mappedBy = "user",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
-            fetch = FetchType.LAZY
-    )
-    private Token token;
-
 
     @ManyToMany(mappedBy = "users", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnoreProperties("users")
@@ -61,17 +53,6 @@ public class User {
         this.password = password;
     }
 
-    public void addToken(Token token) {
-        token.setUser(this);
-        this.setToken(token);
-    }
-
-    public void removeToken(Token token) {
-        if(token != null) {
-            token.setUser(null);
-            this.token = null;
-        }
-    }
 
 
     @Override

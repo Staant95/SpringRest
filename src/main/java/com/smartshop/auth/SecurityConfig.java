@@ -1,7 +1,7 @@
 package com.smartshop.auth;
 
 import com.smartshop.auth.filters.JwtRequestFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.smartshop.utils.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -18,26 +18,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] WHITELIST = {
             "/auth/register",
-            "/auth/login",
-            "/test/**",
-            "/supermarkets/**",
-            "/products/**",
-            "/users/**",
+            "/auth/login"
     };
 
-    private final CustomUserDetailsService userDetailsService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     private final JwtRequestFilter jwtRequestFilter;
 
     public SecurityConfig(CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
-        this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = userDetailsService;
         this.jwtRequestFilter = jwtRequestFilter;
     }
 
     // AuthenticanManagerBuilder configures how AuthenticaManager is going to authenticate users
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(userDetailsService).passwordEncoder(getPasswordEncoder());
+        auth.userDetailsService(customUserDetailsService).passwordEncoder(getPasswordEncoder());
     }
 
 

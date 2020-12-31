@@ -4,63 +4,71 @@ package com.smartshop.resources;
 import com.smartshop.auth.CustomUserDetailsService;
 import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
-import com.smartshop.models.Token;
+import com.smartshop.models.responses.Token;
 import com.smartshop.models.User;
 import com.smartshop.models.auth.AuthenticationRequest;
 import com.smartshop.repositories.UserRepository;
-import com.smartshop.services.LoginService;
+import com.smartshop.utils.JwtUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 @Slf4j
 public class AuthResource {
 
-    private final LoginService loginService;
-
     private final UserRepository userRepository;
 
     private final CustomUserDetailsService userDetailsService;
 
+    private final AuthenticationManager authenticationManager;
+
     private final UserMapper userMapper;
 
-    public AuthResource(LoginService loginService, UserRepository userRepository, CustomUserDetailsService userDetailsService, UserMapper userMapper) {
-        this.loginService = loginService;
+    private final JwtUtil jwtUtil;
+
+    public AuthResource(UserRepository userRepository,
+                        CustomUserDetailsService userDetailsService,
+                        UserMapper userMapper,
+                        AuthenticationManager authenticationManager,
+                        JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.userDetailsService = userDetailsService;
         this.userMapper = userMapper;
+        this.authenticationManager = authenticationManager;
+        this.jwtUtil = jwtUtil;
     }
 
 
     @PostMapping("/login")
     public ResponseEntity<?> loginAndCreateToken(
-            @Valid @RequestBody AuthenticationRequest authenticationRequest) {
+            @RequestBody AuthenticationRequest authenticationRequest) {
 
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(authenticationRequest.getEmail());
+       try {
+           this.authenticationManager.authenticate(
+                   new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword())
+           );
+       } catch(BadCredentialsException e) {
+           log.info("Failed to login user");
+           throw new BadCredentialsException("Invalid email or password");
+       }
 
-        log.info("HIT");
+        final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
 
-        User user = userRepository.findByEmail(userDetails.getUsername()).get();
-        log.info("HIT");
-        Token token = loginService.createToken(user, userDetails);
+        String jwt = this.jwtUtil.generateToken(userDetails);
 
-        user.addToken(token);
+        Token token = new Token(jwt, this.jwtUtil.extractExpiration(jwt));
 
-        User saved = this.userRepository.save(user);
-
-        return ResponseEntity.ok(saved.getToken());
+        return ResponseEntity.ok(token);
     }
 
 
@@ -71,11 +79,9 @@ public class AuthResource {
 
         User usr = userMapper.fromDto(user);
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userMapper.toDto(this.userRepository.save(usr)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(this.userRepository.save(usr)));
 
     }
-
 
 }
 

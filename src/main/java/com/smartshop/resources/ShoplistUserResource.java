@@ -86,8 +86,6 @@ public class ShoplistUserResource {
 
         if (shoplist.isEmpty()) return ResponseEntity.notFound().build();
 
-        logger.info("CURRENT USER -> " +  principal.getName());
-
         shoplist.get().getUsers().remove(loggedUser);
         this.shoplistRepository.flush();
 
