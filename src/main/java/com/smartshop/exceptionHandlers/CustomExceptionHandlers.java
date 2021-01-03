@@ -25,7 +25,7 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(value = {ConstraintViolationException.class})
     public ResponseEntity<Object> handleConstraintViolation() {
-        return new ResponseEntity(new MessageResponse("Email is already taken."),HttpStatus.CONFLICT);
+        return new ResponseEntity(new MessageResponse("Email is already taken.spoti"),HttpStatus.CONFLICT);
     }
 
 

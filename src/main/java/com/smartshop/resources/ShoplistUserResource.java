@@ -50,7 +50,7 @@ public class ShoplistUserResource {
     }
 
 
-    @PostMapping("/subscribe")
+    @PostMapping
     public ResponseEntity<List<UserDto>> store(
             @PathVariable("shoplist") Long id,
             Principal principal) {
@@ -75,7 +75,7 @@ public class ShoplistUserResource {
         return ResponseEntity.status(HttpStatus.CREATED).body(membersOfList);
     }
 
-    @DeleteMapping("/unsubscribe")
+    @DeleteMapping
     public ResponseEntity<ResponseStatus> destroy(
             @PathVariable("shoplist") Long id,
             Principal principal) {

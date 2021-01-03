@@ -109,7 +109,7 @@ public class ShoplistResource {
     }
 
 
-    @GetMapping("/{shoplist}/best")
+    @GetMapping("/{shoplist}/supermarkets")
     public ResponseEntity<?> getBestSupermarket(@PathVariable("shoplist") Long id,
                                                 @Valid @RequestBody Position userPosition,
                                                 Principal principal) {

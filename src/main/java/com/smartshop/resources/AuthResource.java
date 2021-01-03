@@ -59,7 +59,7 @@ public class AuthResource {
            );
        } catch(BadCredentialsException e) {
            log.info("Failed to login user");
-           throw new BadCredentialsException("Invalid email or password");
+           throw new BadCredentialsException("Email or password are invalid!");
        }
 
         final UserDetails userDetails = userDetailsService.loadUserByUsername(authenticationRequest.getEmail());
