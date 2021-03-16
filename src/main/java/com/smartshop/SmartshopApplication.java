@@ -1,6 +1,8 @@
 package com.smartshop;
 
-import com.smartshop.services.DatabaseSeeder;
+
+
+import com.smartshop.seeders.DatabaseSeeder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -12,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
 public class SmartshopApplication implements CommandLineRunner {
+
 
     private final DatabaseSeeder seeder;
 
