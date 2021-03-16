@@ -66,9 +66,11 @@ public class AuthResource {
 
         String jwt = this.jwtUtil.generateToken(userDetails);
 
-        Token token = new Token(jwt, this.jwtUtil.extractExpiration(jwt));
+        User registred = this.userRepository.findByEmail(this.jwtUtil.extractUsername(jwt)).get();
 
-        return ResponseEntity.ok(token);
+        Token token = new Token(jwt, this.jwtUtil.extractExpiration(jwt), userMapper.toDto(registred));
+
+        return ResponseEntity.status(HttpStatus.OK).body(token);
     }
 
 
