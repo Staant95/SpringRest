@@ -5,10 +5,8 @@ import com.smartshop.dtoMappers.ProductShoplistMapper;
 import com.smartshop.models.*;
 import com.smartshop.models.requestBody.EntityID;
 import com.smartshop.models.requestBody.ProductQuantity;
-import com.smartshop.models.responses.Notification;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
-import com.smartshop.services.SsePushNotification;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,18 +28,14 @@ public class ShoplistProductResource {
 
     private final ProductShoplistMapper productShoplistMapper;
 
-    private final SsePushNotification pushNotification;
-
 
     public ShoplistProductResource(ShoplistRepository shoplistRepository,
                                    ProductRepository productRepository,
-                                   ProductShoplistMapper productShoplistMapper,
-                                   SsePushNotification pushNotification) {
+                                   ProductShoplistMapper productShoplistMapper) {
 
         this.shoplistRepository = shoplistRepository;
         this.productRepository = productRepository;
         this.productShoplistMapper = productShoplistMapper;
-        this.pushNotification = pushNotification;
     }
 
 
@@ -81,16 +75,17 @@ public class ShoplistProductResource {
         if(productCount > 0) {
             int quantity = this.shoplistRepository.getProductQuantity(shoplist.get().getId(), productId.getId()) + 1;
 
-            this.shoplistRepository.updateQuantity(product.get().getId(),shoplist.get().getId(),quantity);
+            this.shoplistRepository.updateQuantity(
+                    product.get().getId(),
+                    shoplist.get().getId(),
+                    quantity
+            );
 
             ProductShoplistDto result = this.productShoplistMapper.toDto(new ProductShoplist(
                     product.get(),
                     shoplist.get(),
                     quantity
             ));
-
-            Notification itemAdded = new Notification(result, NotificationActionEnum.UPDATED);
-            this.pushNotification.sendByTopic(id, itemAdded );
 
             return ResponseEntity.ok(result);
         }
@@ -106,8 +101,6 @@ public class ShoplistProductResource {
 
         ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
 
-        Notification itemAdded = new Notification(result, NotificationActionEnum.INSERTED);
-        this.pushNotification.sendByTopic(id, itemAdded );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
@@ -132,7 +125,7 @@ public class ShoplistProductResource {
 
         shoplist = this.shoplistRepository.findById(shoplistId);
 
-        ProductShoplistDto products =  shoplist.get().getProducts()
+        ProductShoplistDto products = shoplist.get().getProducts()
                 .stream()
                 .map(productShoplistMapper::toDto)
                 .collect(Collectors.toList())
@@ -166,8 +159,6 @@ public class ShoplistProductResource {
             }
         }
 
-        Notification itemAdded = new Notification(result, NotificationActionEnum.DELETED);
-        this.pushNotification.sendByTopic(shoplistId, itemAdded );
 
         return ResponseEntity.noContent().build();
     }
