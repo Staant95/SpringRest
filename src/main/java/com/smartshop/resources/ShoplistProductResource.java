@@ -58,7 +58,7 @@ public class ShoplistProductResource {
 
 
     @PostMapping
-    public ResponseEntity<?> store(
+    public ResponseEntity<ProductShoplistDto> store(
             @PathVariable("shoplist") Long id,
             @RequestBody EntityID productId
     ) {
@@ -66,42 +66,33 @@ public class ShoplistProductResource {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
         Optional<Product> product = this.productRepository.findById(productId.getId());
 
-        if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.notFound().build();
+        if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.badRequest().build();
 
         // check if the product is already in the list, if true increment the quantity by 1
-        // one query for each product in the list..
 
-        Integer productCount = this.shoplistRepository.containsProduct(shoplist.get().getId(), productId.getId());
+        Optional<ProductShoplist> optionalProductInList = shoplist.get().getProducts().stream()
+                .filter(ps -> ps.getProduct().getId().equals(productId.getId()))
+                .findFirst();
 
-        if(productCount > 0) {
-            int quantity = this.shoplistRepository.getProductQuantity(shoplist.get().getId(), productId.getId()) + 1;
+        if(optionalProductInList.isPresent()) {
+            int currentQuantity = optionalProductInList.get().getQuantity();
+            ProductShoplist ps = optionalProductInList.get();
 
-            this.shoplistRepository.updateQuantity(
-                    product.get().getId(),
-                    shoplist.get().getId(),
-                    quantity
-            );
+            ps.setQuantity(currentQuantity + 1);
+            this.shoplistRepository.saveAndFlush(ps.getShoplist());
 
-            ProductShoplistDto result = this.productShoplistMapper.toDto(new ProductShoplist(
-                    product.get(),
-                    shoplist.get(),
-                    quantity
-            ));
-
-            return ResponseEntity.ok(result);
+            return ResponseEntity.ok(this.productShoplistMapper.toDto(ps));
         }
 
-        ProductShoplist ps = new ProductShoplist();
-        ps.setProduct(product.get());
-        ps.setShoplist(shoplist.get());
+
+        ProductShoplist ps = new ProductShoplist(product.get(), shoplist.get());
 
         shoplist.get().getProducts().add(ps);
         product.get().getShoplists().add(ps);
 
-        this.shoplistRepository.flush();
+        this.shoplistRepository.saveAndFlush(ps.getShoplist());
 
         ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
-
 
         return ResponseEntity.status(HttpStatus.CREATED).body(result);
 
