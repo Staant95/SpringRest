@@ -118,21 +118,19 @@ public class ShoplistProductResource {
 
         if(shoplist.isEmpty() || product.isEmpty() ) return ResponseEntity.notFound().build();
 
-        this.shoplistRepository.updateQuantity(
-                productId,
-                shoplistId,
-                p.getQuantity()
+        Optional<ProductShoplist> result = shoplist.get().getProducts().stream()
+                .filter(ps -> ps.getProduct().getId().equals(productId))
+                .findFirst();
+
+        if(result.isEmpty()) return ResponseEntity.notFound().build();
+
+        result.get().setQuantity(p.getQuantity());
+        this.shoplistRepository.saveAndFlush(result.get().getShoplist());
+
+        return ResponseEntity.ok(
+                this.productShoplistMapper.toDto(result.get())
         );
 
-        shoplist = this.shoplistRepository.findById(shoplistId);
-
-        ProductShoplistDto products = shoplist.get().getProducts()
-                .stream()
-                .map(productShoplistMapper::toDto)
-                .collect(Collectors.toList())
-                .get(0);
-
-        return ResponseEntity.ok(products);
     }
 
 
