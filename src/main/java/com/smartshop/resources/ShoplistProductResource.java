@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -68,12 +67,12 @@ public class ShoplistProductResource {
 
         if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.badRequest().build();
 
-        // check if the product is already in the list, if true increment the quantity by 1
-
+        // get, if exists, the product in the shopping list
         Optional<ProductShoplist> optionalProductInList = shoplist.get().getProducts().stream()
                 .filter(ps -> ps.getProduct().getId().equals(productId.getId()))
                 .findFirst();
 
+        // if the product is in the list then increment by 1
         if(optionalProductInList.isPresent()) {
             int currentQuantity = optionalProductInList.get().getQuantity();
             ProductShoplist ps = optionalProductInList.get();

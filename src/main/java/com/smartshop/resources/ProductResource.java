@@ -5,6 +5,7 @@ import com.smartshop.dtoMappers.ProductMapper;
 import com.smartshop.models.Product;
 import com.smartshop.models.requestBody.ProductSearchTerm;
 import com.smartshop.repositories.ProductRepository;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -64,10 +65,16 @@ public class ProductResource {
 
 
     @GetMapping("/search")
-    public ResponseEntity<List<ProductDto>> search(@RequestBody ProductSearchTerm term) {
+    public ResponseEntity<List<ProductDto>> search(@RequestParam("name") String name) {
+
+        if(name.trim().length() == 0) return ResponseEntity.ok(List.of());
+
+        Optional<List<Product>> matches = this.productRepository.findByNameStartsWith(name.trim());
+
+        if(matches.isEmpty()) return ResponseEntity.ok(List.of());
 
         return ResponseEntity.ok(
-                productMapper.toDtoList(this.productRepository.findByNameStartsWith(term.getSearchTerm()))
+                productMapper.toDtoList(matches.get())
         );
 
     }
