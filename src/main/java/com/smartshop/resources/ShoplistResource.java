@@ -92,18 +92,29 @@ public class ShoplistResource {
 
     }
 
+    // Remove user from that list, not actually delete the list!
     @DeleteMapping("/{shoplist}")
     public ResponseEntity<?> destroy(@PathVariable("shoplist") Long id, Principal principal) {
+        // Check if user has a list with that ID
+        Optional<User> user = this.userRepository.findByEmail(principal.getName());
 
-        User user = this.userRepository.findByEmail(principal.getName()).get();
+        user.ifPresentOrElse(
+                u -> log.info("Resource: Shoplist, Method: Delete, from user with id:" + u.getId()),
+                () -> log.info("Could not find any user")
+        );
 
-        Optional<Shoplist> result = user.getShoplists().stream()
-                .filter(shoplist -> shoplist.getId().equals(id))
-                .findFirst();
-
-        if (result.isEmpty()) return ResponseEntity.notFound().build();
-
-        this.shoplistRepository.delete(result.get());
+        if(user.isPresent()) {
+            Optional<Shoplist> listToDelete = user.get().getShoplists().stream()
+                                            .filter(shoplist -> shoplist.getId().equals(id))
+                                            .findFirst();
+            if(listToDelete.isPresent()) {
+                user.get().getShoplists().remove(listToDelete.get());
+                listToDelete.get().getUsers().remove(user.get());
+                this.shoplistRepository.flush();
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        }
 
         return ResponseEntity.noContent().build();
     }

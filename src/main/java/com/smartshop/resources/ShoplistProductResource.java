@@ -44,6 +44,7 @@ public class ShoplistProductResource {
             @PathVariable("shoplist") Long id
     ) {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
+
         if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
 
         List<ProductShoplistDto> products =  shoplist.get().getProducts()
@@ -59,9 +60,9 @@ public class ShoplistProductResource {
     @PostMapping
     public ResponseEntity<?> store(
             @PathVariable("shoplist") Long id,
-            @Valid @RequestBody EntityID productId
+            @RequestBody EntityID productId
     ) {
-        // if body is not provied throws 500...
+
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
         Optional<Product> product = this.productRepository.findById(productId.getId());
 
@@ -144,21 +145,20 @@ public class ShoplistProductResource {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(shoplistId);
         Optional<Product> product = this.productRepository.findById(productId);
 
-        if(! (shoplist.isPresent() && product.isPresent()) ) return ResponseEntity.notFound().build();
+        // fail fast
+        if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.notFound().build();
 
-        ProductShoplistDto result = this.productShoplistMapper.toDto(new ProductShoplist(
-                product.get(),
-                shoplist.get()
-        ));
+        Optional<ProductShoplist> productToDelete = shoplist.get().getProducts().stream()
+                .filter(p -> productId.equals(p.getProduct().getId()))
+                .findFirst();
 
-        for(ProductShoplist p : shoplist.get().getProducts()) {
-            if(productId.equals(p.getProduct().getId())) {
-                shoplist.get().getProducts().remove(p);
-                product.get().getShoplists().remove(p);
-                this.shoplistRepository.saveAndFlush(shoplist.get());
-            }
-        }
 
+        if(productToDelete.isEmpty()) return ResponseEntity.notFound().build();
+
+        shoplist.get().getProducts().remove(productToDelete.get());
+        product.get().getShoplists().remove(productToDelete.get());
+
+        this.shoplistRepository.saveAndFlush(shoplist.get());
 
         return ResponseEntity.noContent().build();
     }
