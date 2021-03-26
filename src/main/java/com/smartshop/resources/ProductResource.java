@@ -53,7 +53,7 @@ public class ProductResource {
     }
 
     @DeleteMapping("/{product}")
-    public ResponseEntity destroy(@PathVariable("product") Long productId) {
+    public ResponseEntity<HttpStatus> destroy(@PathVariable("product") Long productId) {
         Optional<Product> product = this.productRepository.findById(productId);
 
         if(product.isEmpty()) return ResponseEntity.notFound().build();
