@@ -120,7 +120,7 @@ public class ShoplistResource {
     }
 
 
-    @GetMapping("/{shoplist}/supermarkets")
+    @PostMapping("/{shoplist}/supermarkets")
     public ResponseEntity<?> getBestSupermarket(@PathVariable("shoplist") Long id,
                                                 @Valid @RequestBody Position userPosition,
                                                 Principal principal) {

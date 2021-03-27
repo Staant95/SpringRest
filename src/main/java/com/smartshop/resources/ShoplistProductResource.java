@@ -61,7 +61,7 @@ public class ShoplistProductResource {
             @PathVariable("shoplist") Long id,
             @RequestBody EntityID productId
     ) {
-
+        log.info("ADDING PRODUCT WITH ID > " + productId.getId());
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
         Optional<Product> product = this.productRepository.findById(productId.getId());
 
@@ -78,7 +78,7 @@ public class ShoplistProductResource {
             ProductShoplist ps = optionalProductInList.get();
 
             ps.setQuantity(currentQuantity + 1);
-            this.shoplistRepository.saveAndFlush(ps.getShoplist());
+            this.shoplistRepository.flush();
 
             return ResponseEntity.ok(this.productShoplistMapper.toDto(ps));
         }

@@ -7,8 +7,6 @@ import com.smartshop.models.Shoplist;
 import com.smartshop.models.User;
 import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +23,6 @@ public class ShoplistUserResource {
     private final ShoplistRepository shoplistRepository;
 
     private final UserRepository userRepository;
-
-    private final Logger logger = LoggerFactory.getLogger(ShoplistUserResource.class);
 
     private final UserMapper userMapper;
 
