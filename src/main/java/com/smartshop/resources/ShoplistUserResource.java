@@ -34,6 +34,7 @@ public class ShoplistUserResource {
 
     @GetMapping
     public ResponseEntity<List<UserDto>> index(@PathVariable("shoplist") Long id) {
+        
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
 
         if(shoplist.isEmpty()) return ResponseEntity.notFound().build();

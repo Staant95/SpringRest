@@ -40,7 +40,9 @@ public class ShoplistProductTableSeeder implements Seeder {
             int ceil = len/2 + (int)(Math.random() * (len / 2));
 
             products.subList(floor, ceil).forEach(product -> {
-                ProductShoplist ps = new ProductShoplist(product, s);
+                ProductShoplist ps = new ProductShoplist();
+                ps.setProduct(product);
+                ps.setShoplist(s);
                 s.getProducts().add(ps);
                 product.getShoplists().add(ps);
 

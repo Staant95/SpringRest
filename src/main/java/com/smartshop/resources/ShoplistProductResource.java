@@ -84,12 +84,15 @@ public class ShoplistProductResource {
         }
 
 
-        ProductShoplist ps = new ProductShoplist(product.get(), shoplist.get());
+        ProductShoplist ps = new ProductShoplist();
+
+        ps.setShoplist(shoplist.get());
+        ps.setProduct(product.get());
 
         shoplist.get().getProducts().add(ps);
         product.get().getShoplists().add(ps);
 
-        this.shoplistRepository.saveAndFlush(ps.getShoplist());
+        this.shoplistRepository.flush();
 
         ProductShoplistDto result = this.productShoplistMapper.toDto(ps);
 

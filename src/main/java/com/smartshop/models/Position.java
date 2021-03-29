@@ -2,7 +2,6 @@ package com.smartshop.models;
 
 import lombok.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @NoArgsConstructor
@@ -16,9 +15,6 @@ public class Position {
 
     @NotNull
     private Double longitude;
-
-    @NotNull
-    private Double maxDistance;
 
     public Position(double latitude, double longitude) {
         this.latitude = latitude;

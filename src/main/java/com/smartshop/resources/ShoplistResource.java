@@ -10,14 +10,11 @@ import com.smartshop.repositories.SupermarketRepository;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.services.GeolocationService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.nio.file.attribute.UserPrincipal;
 import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -52,7 +49,7 @@ public class ShoplistResource {
     }
 
     @GetMapping
-    public ResponseEntity<Set<ShoplistDto>> index(Principal principal) {
+    public ResponseEntity<?> index(Principal principal) {
 
         // the route is protected
         User user = this.userRepository.findByEmail(principal.getName()).get();
@@ -134,16 +131,13 @@ public class ShoplistResource {
         if (userShoplists.isEmpty()) return ResponseEntity.notFound().build();
 
         // get only IDs
-        List<Supermarket> supermarketList = this.supermarketRepository.findAll();
+        List<Long> supermarketList = this.supermarketRepository.findAll()
+                                        .stream()
+                                        .map(supermarket -> supermarket.getId())
+                                        .collect(Collectors.toList());
 
-        List<Long> inRangeSupermarketsId = new ArrayList<>(this.geolocationService
-                .filterSupermarketsByDistance(userPosition, supermarketList, userPosition.getMaxDistance()));
-
-        if (inRangeSupermarketsId.size() == 0) {
-            return ResponseEntity.ok(new MessageResponse("Could not find any supermarket in that range. Please try a bigger range"));
-        }
-
-        List<SupermarketResponse> results = this.shoplistRepository.getBestSupermarket(userShoplists.get().getId(), inRangeSupermarketsId)
+                                        
+        List<SupermarketResponse> results = this.shoplistRepository.getBestSupermarket(userShoplists.get().getId(), supermarketList)
                 .stream()
                 .map(supermarket -> {
                     double distance = this.geolocationService.calculateDistanceBetweenPoints(

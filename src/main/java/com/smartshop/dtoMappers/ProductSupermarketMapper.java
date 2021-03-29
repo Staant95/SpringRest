@@ -2,12 +2,9 @@ package com.smartshop.dtoMappers;
 
 
 import com.smartshop.dto.ProductSupermarketDto;
-import com.smartshop.models.Product;
 import com.smartshop.models.ProductSupermarket;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
-
-import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ProductSupermarketMapper {
