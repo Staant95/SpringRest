@@ -91,4 +91,22 @@ public class ShoplistUserResource {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
+    @GetMapping("/join")
+    public ResponseEntity<ResponseStatus> joinList(@PathVariable("shoplist") Long id, Principal principal) {
+
+        Optional<User> loggedUser = this.userRepository.findByEmail(principal.getName());
+        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
+
+        if(shoplist.isEmpty() || loggedUser.isEmpty()) return ResponseEntity.notFound().build();
+
+        if(shoplist.get().getUsers().contains(loggedUser.get()))
+            return ResponseEntity.noContent().build();
+
+        shoplist.get().getUsers().add(loggedUser.get());
+
+        this.shoplistRepository.flush();
+
+        return ResponseEntity.ok().build();
+    }
+
 }

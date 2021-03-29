@@ -16,6 +16,15 @@ public class ShoplistDto implements Serializable {
     private Long id;
     private String name;
     private Set<UserDto> users;
+    private String link;
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
 
     public Long getId() {
         return id;

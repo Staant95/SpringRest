@@ -23,7 +23,6 @@ public class Shoplist {
     @Column(nullable = false)
     private String name;
 
-
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JsonIgnoreProperties("shoplists")
     private Set<User> users = new HashSet<>();
