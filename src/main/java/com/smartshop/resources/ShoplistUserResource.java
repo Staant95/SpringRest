@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/shoplists/{shoplist}/users")
+@Slf4j
 public class ShoplistUserResource {
 
     private final ShoplistRepository shoplistRepository;
@@ -58,8 +61,9 @@ public class ShoplistUserResource {
         if(shoplist.isEmpty() || loggedUser.isEmpty()) return ResponseEntity.notFound().build();
 
         // Check if the user is already in the list, if true return the list of user
-        if(shoplist.get().getUsers().contains(loggedUser.get()))
+        if(shoplist.get().getUsers().contains(loggedUser.get())) 
             return ResponseEntity.noContent().build();
+        
 
         shoplist.get().getUsers().add(loggedUser.get());
 
@@ -99,8 +103,10 @@ public class ShoplistUserResource {
 
         if(shoplist.isEmpty() || loggedUser.isEmpty()) return ResponseEntity.notFound().build();
 
-        if(shoplist.get().getUsers().contains(loggedUser.get()))
+        if(shoplist.get().getUsers().contains(loggedUser.get())) {
+            log.info("User already in the list");
             return ResponseEntity.noContent().build();
+        }
 
         shoplist.get().getUsers().add(loggedUser.get());
 

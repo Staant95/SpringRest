@@ -2,12 +2,8 @@ package com.smartshop.dto;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
-import com.smartshop.models.User;
-
-import lombok.Data;
 
 import java.io.Serializable;
-import java.util.HashSet;
 import java.util.Set;
 
 @JsonIdentityInfo(generator= ObjectIdGenerators.PropertyGenerator.class, property="id")
@@ -16,15 +12,7 @@ public class ShoplistDto implements Serializable {
     private Long id;
     private String name;
     private Set<UserDto> users;
-    private String link;
 
-    public String getLink() {
-        return link;
-    }
-
-    public void setLink(String link) {
-        this.link = link;
-    }
 
     public Long getId() {
         return id;

@@ -45,7 +45,6 @@ public class ShoplistProductResource {
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
 
         if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
-
         List<ProductShoplistDto> products =  shoplist.get().getProducts()
                 .stream()
                 .map(productShoplistMapper::toDto)

@@ -64,10 +64,15 @@ public class ShoplistResource {
 
         Shoplist list = this.shoplistRepository.save(this.shoplistMapper.fromDto(shoplist));
 
-        User user = this.userRepository.findByEmail(principal.getName()).get();
+        Optional<User> user = this.userRepository.findByEmail(principal.getName());
 
-        list.getUsers().add(user);
-        user.getShoplists().add(list);
+        if(user.isEmpty()) {
+            log.info("USER HAS NO TOKEN");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        list.getUsers().add(user.get());
+        user.get().getShoplists().add(list);
 
         this.shoplistRepository.flush();
 
