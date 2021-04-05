@@ -50,17 +50,6 @@ public class ProductResource {
         return ResponseEntity.ok(productMapper.toDto(product.get()));
     }
 
-    @DeleteMapping("/{product}")
-    public ResponseEntity<HttpStatus> destroy(@PathVariable("product") Long productId) {
-        Optional<Product> product = this.productRepository.findById(productId);
-
-        if(product.isEmpty()) return ResponseEntity.notFound().build();
-
-        this.productRepository.delete(product.get());
-
-        return ResponseEntity.noContent().build();
-    }
-
 
     @GetMapping("/search")
     public ResponseEntity<List<ProductDto>> search(@RequestParam("name") String name) {

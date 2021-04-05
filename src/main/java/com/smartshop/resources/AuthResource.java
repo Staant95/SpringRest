@@ -50,7 +50,7 @@ public class AuthResource {
 
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginAndCreateToken(
+    public ResponseEntity<Token> loginAndCreateToken(
             @RequestBody AuthenticationRequest authenticationRequest) {
 
        try {

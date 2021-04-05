@@ -46,7 +46,7 @@ public class SupermarketResource {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity destroy(@PathVariable("id") Long id) {
+    public ResponseEntity<HttpStatus> destroy(@PathVariable("id") Long id) {
 
         Optional<Supermarket> searched = this.supermarketRepository.findById(id);
 

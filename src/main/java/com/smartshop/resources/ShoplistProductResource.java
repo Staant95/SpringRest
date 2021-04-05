@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.validation.Valid;
+
 @RestController
 @RequestMapping("/shoplists/{shoplist}/products")
 @Slf4j
@@ -58,7 +60,7 @@ public class ShoplistProductResource {
     @PostMapping
     public ResponseEntity<ProductShoplistDto> store(
             @PathVariable("shoplist") Long id,
-            @RequestBody EntityID productId
+            @Valid @RequestBody EntityID productId
     ) {
         log.info("ADDING PRODUCT WITH ID > " + productId.getId());
         Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
