@@ -24,7 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         Optional<User> user = userRepository.findByEmail(email);
 
-        if(user.isEmpty()) throw new UsernameNotFoundException("Could not find any user");
+        if(user.isEmpty()) throw new UsernameNotFoundException("Could not find any user with provided credentials");
 
         return new CustomUserDetails(user.get().getEmail(), user.get().getPassword());
     }

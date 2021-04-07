@@ -3,7 +3,6 @@ package com.smartshop.resources;
 import com.smartshop.dto.ShoplistDto;
 import com.smartshop.dtoMappers.ShoplistMapper;
 import com.smartshop.models.*;
-import com.smartshop.models.responses.MessageResponse;
 import com.smartshop.models.responses.SupermarketResponse;
 import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.SupermarketRepository;

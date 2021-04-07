@@ -1,31 +1,49 @@
 package com.smartshop.exceptionHandlers;
 
-import com.smartshop.models.responses.MessageResponse;
-import io.jsonwebtoken.MalformedJwtException;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@ControllerAdvice
+@RestControllerAdvice
 @Slf4j
 public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(value = {ConstraintViolationException.class})
-    public ResponseEntity<Object> handleConstraintViolation() {
-        return new ResponseEntity(new MessageResponse("Email is already taken.spoti"),HttpStatus.CONFLICT);
+
+    @ExceptionHandler(InvalidLoginCredentialsException.class)
+    public ResponseEntity<Object> handleInvalidLoginCredentials(
+            InvalidLoginCredentialsException ex, WebRequest request
+    ) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(map);
+    }
+
+    @ExceptionHandler(DuplicateEmailException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleDuplicateEmailViolation(
+            DuplicateEmailException ex, WebRequest request
+    ) {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(map);
     }
 
 
@@ -36,28 +54,41 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
                                                                   HttpStatus status,
                                                                   WebRequest request) {
 
-        Map<String, String> errors = new HashMap<>();
+        List<FieldErrorResource> errorResources =
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(fieldError -> new FieldErrorResource(
+                                            fieldError.getObjectName(),
+                                            fieldError.getField(),
+                                            fieldError.getCode(),
+                                            fieldError.getDefaultMessage())
+                        )
+                        .collect(Collectors.toList());
 
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-
-
-        return new ResponseEntity<>(new MessageResponse("Invalid data", errors), HttpStatus.BAD_REQUEST);
+        return ResponseEntity
+                .status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ErrorResource(errorResources));
     }
 
 
     @ExceptionHandler(value = {UsernameNotFoundException.class})
-    protected ResponseEntity<?> handleUsernameNotFoundException() {
-        return new ResponseEntity(new MessageResponse("Your token is invalid"), HttpStatus.UNAUTHORIZED);
+    protected ResponseEntity<?> handleUsernameNotFoundException(UsernameNotFoundException ex) {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", ex.getMessage());
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
+                .body(map);
     }
 
-    @ExceptionHandler(value = {BadCredentialsException.class})
-    protected ResponseEntity<?> handleBadCredentialsException() {
-        return new ResponseEntity(new MessageResponse("Email or password are incorrect!"), HttpStatus.UNAUTHORIZED);
-    }
 
+    private String getParam(String s) {
+        String[] splits = s.split("\\.");
+        if (splits.length == 1) {
+            return s;
+        } else {
+            return String.join(".", Arrays.copyOfRange(splits, 2, splits.length));
+        }
+    }
 
 }

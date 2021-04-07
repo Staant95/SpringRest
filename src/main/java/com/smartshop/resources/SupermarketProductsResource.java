@@ -6,7 +6,6 @@ import com.smartshop.models.Product;
 import com.smartshop.models.ProductSupermarket;
 import com.smartshop.models.Supermarket;
 import com.smartshop.models.requestBody.ProductInSupermarket;
-import com.smartshop.models.responses.MessageResponse;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
 import org.springframework.http.ResponseEntity;
@@ -59,9 +58,6 @@ public class SupermarketProductsResource {
     public ResponseEntity<?> store(
             @PathVariable("supermarket") Long supermarketId,
             @Valid @RequestBody ProductInSupermarket product) {
-
-        if(product.getPrice() == 0.0)
-            return ResponseEntity.badRequest().body(new MessageResponse("Price must NOT be 0"));
 
         Optional<Supermarket> optionalSupermarket = this.supermarketRepository.findById(supermarketId);
 
