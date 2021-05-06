@@ -1,6 +1,6 @@
 package com.smartshop.auth.filters;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.smartshop.auth.CustomUserDetailsService;
 import com.smartshop.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -47,9 +47,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
-        String jwt;
+        String jwt = null;
 
-        // Extract Token from header or else return 401
+        // Extract Token from header
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
 
@@ -58,15 +58,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             } catch (IllegalArgumentException | ExpiredJwtException | SignatureException | MalformedJwtException e) {
                 log.info("An error occured while validating token");
             }
-        } else {
-            log.info("Token is missing from request. URL: " + request.getRequestURI());
-            response.setStatus(401);
-            response.addHeader("Content-Type", "application/json");
-            response.getWriter().write(
-                    new ObjectMapper().writeValueAsString(new ErrorMessage(request.getRequestURI()))
-            );
-            return;
-        }
+        } 
 
         // Set context
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -88,23 +80,5 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-}
 
-class ErrorMessage {
-    String message = "You need to obtain a token before accessing ";
-
-    public ErrorMessage(String path) {
-        this.message += path;
-    }
-
-    public ErrorMessage() {
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
 }

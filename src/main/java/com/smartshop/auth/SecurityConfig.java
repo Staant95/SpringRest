@@ -4,6 +4,7 @@ import com.smartshop.auth.filters.JwtRequestFilter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -12,13 +13,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] WHITELIST = {
-            "/api/auth/login",
+            "/auth/login",
     };
 
     private final CustomUserDetailsService customUserDetailsService;
@@ -44,30 +46,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-
-        http.csrf()
-        .disable()
-        .cors()
+        http.cors().and().csrf().disable()
+        .authorizeRequests().antMatchers(WHITELIST).permitAll()
+        .anyRequest().authenticated()
         .and()
         .exceptionHandling()
-        .and()
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .and()
-        .authorizeRequests()
-        .antMatchers("/api/auth/**")
-        .permitAll()
-        .anyRequest()
-        .authenticated();
-
-        
-
-        // http.cors().and().csrf().disable()
-        // .authorizeRequests().antMatchers(WHITELIST).permitAll()
-        // .anyRequest().authenticated()
-        // .and()
-        // .exceptionHandling().and().sessionManagement()
-        // .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+        .and().sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
         http.addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
     }
