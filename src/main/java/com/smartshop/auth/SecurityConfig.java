@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] WHITELIST = {
-            "/auth/login",
+            "/auth/**",
     };
 
     private final CustomUserDetailsService customUserDetailsService;
