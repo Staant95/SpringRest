@@ -1,9 +1,6 @@
 package com.smartshop;
 
-
-
 import com.smartshop.seeders.DatabaseSeeder;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,6 +18,8 @@ public class SmartshopApplication implements CommandLineRunner {
     public SmartshopApplication(DatabaseSeeder seeder) {
         this.seeder = seeder;
     }
+
+
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {

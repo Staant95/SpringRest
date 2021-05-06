@@ -1,9 +1,6 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -12,9 +9,6 @@ import java.util.Set;
 
 
 @Entity
-@Setter
-@Getter
-@NoArgsConstructor
 public class Supermarket {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,7 +28,7 @@ public class Supermarket {
             mappedBy = "supermarket",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private Set<ProductSupermarket> products = new HashSet<>();
+    private final Set<ProductSupermarket> products = new HashSet<>();
 
 
 
@@ -42,6 +36,45 @@ public class Supermarket {
         this.name = name;
         this.latitude = latitude;
         this.longitude = longitude;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public Supermarket() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public Set<ProductSupermarket> getProducts() {
+        return products;
     }
 
     @Override

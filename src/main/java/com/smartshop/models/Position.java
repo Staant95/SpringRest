@@ -1,13 +1,7 @@
 package com.smartshop.models;
 
-import lombok.*;
-
 import javax.validation.constraints.NotNull;
 
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
 public class Position {
 
     @NotNull
@@ -18,6 +12,30 @@ public class Position {
 
     public Position(double latitude, double longitude) {
         this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Position() {
+    }
+
+    public Position(Double latitude, Double longitude) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 }

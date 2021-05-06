@@ -1,9 +1,6 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
@@ -11,9 +8,6 @@ import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
-@Getter
-@Setter
-@NoArgsConstructor
 @Entity
 public class ProductSupermarket implements Serializable {
 
@@ -46,6 +40,25 @@ public class ProductSupermarket implements Serializable {
     }
 
 
+    public ProductSupermarket() {
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public Supermarket getSupermarket() {
+        return supermarket;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -58,5 +71,13 @@ public class ProductSupermarket implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(getProduct(), getSupermarket());
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public void setSupermarket(Supermarket supermarket) {
+        this.supermarket = supermarket;
     }
 }

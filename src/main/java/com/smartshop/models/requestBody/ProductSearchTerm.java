@@ -1,18 +1,22 @@
 package com.smartshop.models.requestBody;
 
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-
-@Getter
-@Setter
-@AllArgsConstructor
-@NoArgsConstructor
 public class ProductSearchTerm {
 
     private String searchTerm;
 
+    public ProductSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+    }
+
+    public ProductSearchTerm() {
+    }
+
+    public String getSearchTerm() {
+        return searchTerm;
+    }
+
+    public void setSearchTerm(String searchTerm) {
+        this.searchTerm = searchTerm;
+    }
 }

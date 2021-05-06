@@ -1,20 +1,12 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Objects;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class ProductShoplist implements Serializable {
 
     @Id
@@ -30,6 +22,37 @@ public class ProductShoplist implements Serializable {
 
     private int quantity = 1;
 
+    public ProductShoplist() {
+    }
+
+    public ProductShoplist(Product product, Shoplist shoplist) {
+        this.product = product;
+        this.shoplist = shoplist;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+    public Shoplist getShoplist() {
+        return shoplist;
+    }
+
+    public void setShoplist(Shoplist shoplist) {
+        this.shoplist = shoplist;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
 
     @Override
     public boolean equals(Object o) {

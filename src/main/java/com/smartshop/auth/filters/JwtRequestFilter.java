@@ -6,15 +6,14 @@ import com.smartshop.utils.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureException;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
@@ -23,25 +22,27 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-@Component
-@Slf4j
 public class JwtRequestFilter extends OncePerRequestFilter {
 
-    private final CustomUserDetailsService userDetailsService;
+    private Logger log = LoggerFactory.getLogger(JwtRequestFilter.class);
 
-    private final JwtUtil jwtUtil;
+    private CustomUserDetailsService userDetailsService;
+
+    private JwtUtil jwtUtil;
 
     public JwtRequestFilter(CustomUserDetailsService userDetailsService, JwtUtil jwtUtil) {
         this.userDetailsService = userDetailsService;
         this.jwtUtil = jwtUtil;
     }
 
+    public JwtRequestFilter() {}
 
-        @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain) throws ServletException, IOException, AuthenticationException {
 
+    @Override
+    protected void doFilterInternal(
+            HttpServletRequest request,
+            @NotNull HttpServletResponse response,
+            @NotNull FilterChain chain) throws ServletException, IOException, AuthenticationException {
 
         final String authorizationHeader = request.getHeader("Authorization");
 
@@ -58,10 +59,12 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 log.info("An error occured while validating token");
             }
         } else {
-            log.info("Token is empty");
+            log.info("Token is missing from request. URL: " + request.getRequestURI());
             response.setStatus(401);
             response.addHeader("Content-Type", "application/json");
-            response.getWriter().write(new ObjectMapper().writeValueAsString(new ErrorMessage(request.getRequestURI())));
+            response.getWriter().write(
+                    new ObjectMapper().writeValueAsString(new ErrorMessage(request.getRequestURI()))
+            );
             return;
         }
 
@@ -87,12 +90,21 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
 }
 
-@Getter
-@NoArgsConstructor
 class ErrorMessage {
     String message = "You need to obtain a token before accessing ";
 
     public ErrorMessage(String path) {
         this.message += path;
+    }
+
+    public ErrorMessage() {
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -1,7 +1,6 @@
 package com.smartshop.models;
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -9,9 +8,6 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Setter
-@Getter
-@NoArgsConstructor
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -36,14 +32,53 @@ public class Product {
     @JsonManagedReference("productShoplist")
     private Set<ProductShoplist> shoplists = new HashSet<>();
 
+    public Product() {
+    }
 
     public Product(String name) {
         this.name = name;
     }
 
+    public Product(Long id) {
+        this.id = id;
+    }
+
     public Product(Long id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setSupermarkets(Set<ProductSupermarket> supermarkets) {
+        this.supermarkets = supermarkets;
+    }
+
+    public void setShoplists(Set<ProductShoplist> shoplists) {
+        this.shoplists = shoplists;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Set<ProductSupermarket> getSupermarkets() {
+        return supermarkets;
+    }
+
+    public Set<ProductShoplist> getShoplists() {
+        return shoplists;
     }
 
     @Override
@@ -60,12 +95,5 @@ public class Product {
         return Objects.hash(getId(), getName());
     }
 
-
-//    @PreRemove
-//    public void removeProductFromSupermarket() {
-//        for(Supermarket s: supermarkets) {
-//            s.getProducts().remove(this);
-//        }
-//    }
 
 }

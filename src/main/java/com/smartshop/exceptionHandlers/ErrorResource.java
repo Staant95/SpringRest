@@ -6,16 +6,18 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import lombok.Getter;
-
 @JsonSerialize(using = ErrorResourceSerializer.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@Getter
 @JsonRootName("errors")
 public class ErrorResource {
-   private List<FieldErrorResource> fieldErrors;
+   private final List<FieldErrorResource> fieldErrors;
    
    public ErrorResource(List<FieldErrorResource> fieldErrorResources) {
        this.fieldErrors = fieldErrorResources;
    }
+
+    public List<FieldErrorResource> getFieldErrors() {
+        return fieldErrors;
+    }
+
 }

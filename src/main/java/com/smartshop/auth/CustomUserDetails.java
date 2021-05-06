@@ -4,13 +4,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 public class CustomUserDetails implements UserDetails {
 
-    private String email;
-    private String password;
+    private final String email;
+    private final String password;
 
 
     public CustomUserDetails(String email, String password) {
@@ -20,7 +20,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Arrays.asList(new SimpleGrantedAuthority("USER"));
+        return Collections.singletonList(new SimpleGrantedAuthority("USER"));
     }
 
     @Override

@@ -8,7 +8,8 @@ import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.SupermarketRepository;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.services.GeolocationService;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,9 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/shoplists")
-@Slf4j
 public class ShoplistResource {
+
+    private final Logger log = LoggerFactory.getLogger(ShoplistResource.class);
 
     private final ShoplistRepository shoplistRepository;
 

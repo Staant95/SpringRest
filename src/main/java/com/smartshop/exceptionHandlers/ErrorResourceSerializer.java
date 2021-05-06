@@ -13,14 +13,19 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 public class ErrorResourceSerializer extends JsonSerializer<ErrorResource> {
 
     @Override
-    public void serialize(ErrorResource value, JsonGenerator generator, SerializerProvider serializerProvider) throws IOException {
+    public void serialize(
+            ErrorResource value,
+            JsonGenerator generator,
+            SerializerProvider serializerProvider
+    ) throws IOException {
+
         Map<String, List<String>> json = new HashMap<>();
         generator.writeStartObject();
         generator.writeObjectFieldStart("errors");
 
         for(FieldErrorResource fieldErrorResource: value.getFieldErrors()) {
             if (!json.containsKey(fieldErrorResource.getField())) {
-                json.put(fieldErrorResource.getField(), new ArrayList<String>());
+                json.put(fieldErrorResource.getField(), new ArrayList<>());
             }
             json.get(fieldErrorResource.getField()).add(fieldErrorResource.getMessage());
         }

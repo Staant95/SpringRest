@@ -1,22 +1,31 @@
 package com.smartshop.models.responses;
 
-
 import com.smartshop.dto.UserDto;
-import lombok.Data;
 
 import java.util.Date;
 
-@Data
 public class Token {
-    private String token;
+    private final String token;
 
-    private Date expiration_date;
+    private final Date expiration_date;
 
-    private UserDto user;
+    private final UserDto user;
 
     public Token(String jwt, Date expiration_date, UserDto user) {
         this.token = jwt;
         this.expiration_date = expiration_date;
         this.user = user;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public Date getExpiration_date() {
+        return expiration_date;
+    }
+
+    public UserDto getUser() {
+        return user;
     }
 }

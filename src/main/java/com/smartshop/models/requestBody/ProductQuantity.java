@@ -1,12 +1,16 @@
 package com.smartshop.models.requestBody;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-@NoArgsConstructor
-@Setter
-@Getter
 public class ProductQuantity {
     private int quantity;
+
+    public ProductQuantity() {
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

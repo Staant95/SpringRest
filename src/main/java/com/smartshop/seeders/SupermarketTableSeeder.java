@@ -2,7 +2,6 @@ package com.smartshop.seeders;
 
 import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.SupermarketRepository;
-import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

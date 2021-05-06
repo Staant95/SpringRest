@@ -1,20 +1,39 @@
 package com.smartshop.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.util.Objects;
 
-@NoArgsConstructor
-@Getter
-@Setter
-@AllArgsConstructor
+
 public class ProductSupermarketDto {
     private Long id;
     private String name;
     private double price;
+
+    public ProductSupermarketDto() {
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 
     @Override
     public boolean equals(Object o) {

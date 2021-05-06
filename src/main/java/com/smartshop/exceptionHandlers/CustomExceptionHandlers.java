@@ -1,6 +1,6 @@
 package com.smartshop.exceptionHandlers;
 
-import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +16,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
-@Slf4j
 public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
 
     @ExceptionHandler(InvalidLoginCredentialsException.class)
     public ResponseEntity<Object> handleInvalidLoginCredentials(
-            InvalidLoginCredentialsException ex, WebRequest request
+            InvalidLoginCredentialsException ex,
+            WebRequest request
     ) {
         Map<String, Object> map = new HashMap<>();
         map.put("message", ex.getMessage());
@@ -35,7 +35,8 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DuplicateEmailException.class)
     @ResponseBody
     public ResponseEntity<Object> handleDuplicateEmailViolation(
-            DuplicateEmailException ex, WebRequest request
+            DuplicateEmailException ex,
+            WebRequest request
     ) {
 
         Map<String, Object> map = new HashMap<>();
@@ -49,10 +50,11 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-                                                                  HttpHeaders headers,
-                                                                  HttpStatus status,
-                                                                  WebRequest request) {
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            @NotNull HttpHeaders headers,
+            @NotNull HttpStatus status,
+            @NotNull WebRequest request) {
 
         List<FieldErrorResource> errorResources =
                 ex.getBindingResult().getFieldErrors().stream()
@@ -81,14 +83,5 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
                 .body(map);
     }
 
-
-    private String getParam(String s) {
-        String[] splits = s.split("\\.");
-        if (splits.length == 1) {
-            return s;
-        } else {
-            return String.join(".", Arrays.copyOfRange(splits, 2, splits.length));
-        }
-    }
 
 }

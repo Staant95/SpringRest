@@ -7,7 +7,8 @@ import com.smartshop.models.requestBody.EntityID;
 import com.smartshop.models.requestBody.ProductQuantity;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,9 @@ import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/shoplists/{shoplist}/products")
-@Slf4j
 public class ShoplistProductResource {
+
+    private final Logger log = LoggerFactory.getLogger(ShoplistProductResource.class);
 
     private final ShoplistRepository shoplistRepository;
 

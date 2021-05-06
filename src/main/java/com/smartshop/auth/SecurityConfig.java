@@ -1,7 +1,8 @@
 package com.smartshop.auth;
 
 import com.smartshop.auth.filters.JwtRequestFilter;
-import com.smartshop.utils.JwtUtil;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,17 +18,20 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private static final String[] WHITELIST = {
-            "/auth/register",
-            "/auth/login"
+            "/api/auth/login",
     };
 
     private final CustomUserDetailsService customUserDetailsService;
 
-    private final JwtRequestFilter jwtRequestFilter;
 
-    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtRequestFilter jwtRequestFilter) {
+    @Bean
+    public JwtRequestFilter jwtRequestFilter() {
+        return new JwtRequestFilter();
+    }
+
+    @Autowired
+    public SecurityConfig(CustomUserDetailsService userDetailsService) {
         this.customUserDetailsService = userDetailsService;
-        this.jwtRequestFilter = jwtRequestFilter;
     }
 
     // AuthenticanManagerBuilder configures how AuthenticaManager is going to authenticate users
@@ -39,14 +43,33 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        http.cors().and().csrf().disable()
-                .authorizeRequests().antMatchers(WHITELIST).permitAll()
-                .anyRequest().authenticated()
-                .and()
-                .exceptionHandling().and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+
+        http.csrf()
+        .disable()
+        .cors()
+        .and()
+        .exceptionHandling()
+        .and()
+        .sessionManagement()
+        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .and()
+        .authorizeRequests()
+        .antMatchers("/api/auth/**")
+        .permitAll()
+        .anyRequest()
+        .authenticated();
+
+        
+
+        // http.cors().and().csrf().disable()
+        // .authorizeRequests().antMatchers(WHITELIST).permitAll()
+        // .anyRequest().authenticated()
+        // .and()
+        // .exceptionHandling().and().sessionManagement()
+        // .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+        http.addFilterBefore(jwtRequestFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Override
@@ -54,8 +77,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-
-
 
     @Bean
     public PasswordEncoder getPasswordEncoder() {

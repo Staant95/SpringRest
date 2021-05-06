@@ -1,7 +1,6 @@
 package com.smartshop.resources;
 
 
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.smartshop.auth.CustomUserDetailsService;
 import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
@@ -12,9 +11,8 @@ import com.smartshop.models.User;
 import com.smartshop.models.auth.AuthenticationRequest;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.utils.JwtUtil;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,20 +22,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Path;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.metadata.ConstraintDescriptor;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/auth")
-@Slf4j
 public class AuthResource {
+    private final Logger log = LoggerFactory.getLogger(AuthResource.class);
 
     private final UserRepository userRepository;
 
@@ -108,8 +100,7 @@ public class AuthResource {
     }
 
 }
-@Getter
-@NoArgsConstructor
+
 class RegistrationForm {
 
     @NotBlank(message = "Can't be empty")
@@ -124,6 +115,32 @@ class RegistrationForm {
 
     @NotBlank(message = "Can't be empty")
     private String password;
+
+    public RegistrationForm() {
+    }
+
+    public RegistrationForm(String name, String lastname, String email, String password) {
+        this.name = name;
+        this.lastname = lastname;
+        this.email = email;
+        this.password = password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLastname() {
+        return lastname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
 
     public void setPassword(String password) {
         this.password = password;

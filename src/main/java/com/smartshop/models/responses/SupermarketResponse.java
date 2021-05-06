@@ -1,28 +1,29 @@
 package com.smartshop.models.responses;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.text.DecimalFormat;
-@Getter
-@Setter
-@NoArgsConstructor
+
 public class SupermarketResponse {
 
-    private Long supermarket_id;
+    private final Long supermarket_id;
 
-    private Double longitude;
+    private final Double longitude;
 
-    private Double latitude;
+    private final Double latitude;
 
-    private String name;
+    private final String name;
 
-    private double total;
+    private final double total;
 
-    private String distanceFromSource;
+    private final String distanceFromSource;
 
-    public SupermarketResponse(Long supermarket_id, Double longitude, Double latitude, String name, double total, double distanceFromSource) {
+    public SupermarketResponse(
+            Long supermarket_id,
+            Double longitude,
+            Double latitude,
+            String name,
+            double total,
+            double distanceFromSource
+    ) {
         this.supermarket_id = supermarket_id;
         this.longitude = longitude;
         this.latitude = latitude;
@@ -30,5 +31,29 @@ public class SupermarketResponse {
         DecimalFormat df = new DecimalFormat("###.##");
         this.total = Double.parseDouble(df.format(total));
         this.distanceFromSource = df.format(distanceFromSource) + "km";
+    }
+
+    public Long getSupermarket_id() {
+        return supermarket_id;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public String getDistanceFromSource() {
+        return distanceFromSource;
     }
 }

@@ -2,7 +2,6 @@ package com.smartshop.models;
 
 
 import com.fasterxml.jackson.annotation.*;
-import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -10,10 +9,6 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property  = "id", scope = Shoplist.class)
 public class Shoplist {
     @Id
@@ -41,6 +36,47 @@ public class Shoplist {
         this.name = name;
     }
 
+
+    public Shoplist() {
+    }
+
+    public Shoplist(Long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public Set<ProductShoplist> getProducts() {
+        return products;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
+    }
+
+    public void setProducts(Set<ProductShoplist> products) {
+        this.products = products;
+    }
 
     @Override
     public boolean equals(Object o) {
