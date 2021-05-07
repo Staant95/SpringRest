@@ -15,9 +15,15 @@ public class GeolocationService {
     public List<Long> filterSupermarketsByDistance(Position source, List<Supermarket> supermarkets, double maxDistance) {
 
          return supermarkets.stream()
-                 .filter(supermarket -> maxDistance > calculateDistanceBetweenPoints(source, new Position(supermarket.getLatitude(), supermarket.getLongitude())))
-                 .map(Supermarket::getId)
-                 .collect(Collectors.toList());
+                .filter(
+                    supermarket -> 
+                    maxDistance > calculateDistanceBetweenPoints(
+                        source, 
+                        new Position(supermarket.getLatitude(), supermarket.getLongitude())
+                    )
+                )
+                .map(Supermarket::getId)
+                .collect(Collectors.toList());
     }
 
 
