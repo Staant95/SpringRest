@@ -41,7 +41,8 @@ public class UserTableSeeder implements Seeder {
                     faker.name().firstName(),
                     faker.name().lastName(),
                     faker.lorem().word() + "@gmail.com",
-                    faker.lorem().word());
+                    faker.lorem().word()
+                    );
 
             logger.info("Email -> " + u.getEmail() + " password -> " + u.getPassword());
 
@@ -56,10 +57,10 @@ public class UserTableSeeder implements Seeder {
 
         }
 
-        User me = new User("Stas", "Antokhi", "stas@gmail.com", new BCryptPasswordEncoder().encode("secret"));
-        this.userRepository.save(me);
-        Shoplist s = new Shoplist("Natale");
-        s.getUsers().add(me);
+        User test = new User("Test", "Rest", "test@gmail.com", new BCryptPasswordEncoder().encode("secret"));
+        this.userRepository.save(test);
+        Shoplist s = new Shoplist("Birthday");
+        s.getUsers().add(test);
         this.shoplistRepository.save(s);
 
 

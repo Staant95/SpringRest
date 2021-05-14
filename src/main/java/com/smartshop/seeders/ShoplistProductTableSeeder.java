@@ -37,7 +37,7 @@ public class ShoplistProductTableSeeder implements Seeder {
 
             int floor = (int)(Math.random() * ((len - (len / 2))));
             int ceil = len/2 + (int)(Math.random() * (len / 2));
-
+            // randomly assign product to shoplist
             products.subList(floor, ceil).forEach(product -> {
                 ProductShoplist ps = new ProductShoplist();
                 ps.setProduct(product);

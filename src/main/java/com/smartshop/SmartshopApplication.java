@@ -25,6 +25,7 @@ public class SmartshopApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // you might want to comment this out
         this.seeder.seed();
     }
 }
