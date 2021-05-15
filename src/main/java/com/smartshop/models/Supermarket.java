@@ -1,6 +1,9 @@
 package com.smartshop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -22,6 +25,9 @@ public class Supermarket {
     @Column(nullable = false)
     private double longitude;
 
+    @Column(columnDefinition = "geometry")
+    private Point location;
+
 
     @JsonManagedReference("supermarketProducts")
     @OneToMany(
@@ -31,11 +37,16 @@ public class Supermarket {
     private final Set<ProductSupermarket> products = new HashSet<>();
 
 
-
-    public Supermarket(String name, double latitude, double longitude) {
+    public Supermarket(String name, Point location) {
         this.name = name;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.location = location;
+    }
+    public Coordinate getLocation() {
+        return location.getCoordinate();
+    }
+
+    public void setLocation(Point location) {
+        this.location = location;
     }
 
     public void setName(String name) {

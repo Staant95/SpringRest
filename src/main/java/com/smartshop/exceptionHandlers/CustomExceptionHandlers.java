@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,18 @@ public class CustomExceptionHandlers extends ResponseEntityExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .body(map);
+    }
+
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    @ResponseBody
+    public ResponseEntity<Object> handleEntityNotFoundException() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("message", "Entity not found");
+
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
                 .body(map);
     }
 

@@ -2,6 +2,9 @@ package com.smartshop.seeders;
 
 import com.smartshop.models.Supermarket;
 import com.smartshop.repositories.SupermarketRepository;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -25,10 +28,21 @@ public class SupermarketTableSeeder implements Seeder {
 
         List<Supermarket> supermarketList = new ArrayList<>();
 //        supermarketList.add(new Supermarket("Coop", 42.4080161, 12.8498633));
-        supermarketList.add(new Supermarket("Conad", 42.419873, 12.910598));
-        supermarketList.add(new Supermarket("Carrefour", 42.405185, 12.865871));
+        supermarketList.add(new Supermarket("ConadNew", createPoint(42.419873, 12.910598)));
+        supermarketList.add(new Supermarket("CarrefourNew", createPoint(42.405185, 12.865871)));
+//        supermarketList.add(new Supermarket("Conad", 42.419873, 12.910598));
+//        supermarketList.add(new Supermarket("Carrefour", 42.405185, 12.865871));
 
         this.supermarketRepository.saveAll(supermarketList);
+
+    }
+
+
+    private Point createPoint(double lat, double lon) {
+        GeometryFactory factory = new GeometryFactory();
+        return factory.createPoint(
+                new Coordinate(lat, lon)
+        );
 
     }
 }

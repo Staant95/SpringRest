@@ -8,12 +8,17 @@ import com.smartshop.repositories.ShoplistRepository;
 import com.smartshop.repositories.SupermarketRepository;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.services.GeolocationService;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.util.GeometricShapeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.security.Principal;
 import java.util.*;
@@ -36,6 +41,7 @@ public class ShoplistResource {
 
     private final UserRepository userRepository;
 
+    @Autowired
     public ShoplistResource(ShoplistRepository shoplistRepository,
                             SupermarketRepository supermarketRepository,
                             ShoplistMapper shoplistMapper,
@@ -139,7 +145,7 @@ public class ShoplistResource {
         // get only IDs
         List<Long> supermarketList = this.supermarketRepository.findAll()
                                         .stream()
-                                        .map(supermarket -> supermarket.getId())
+                                        .map(Supermarket::getId)
                                         .collect(Collectors.toList());
 
                                         
@@ -165,5 +171,35 @@ public class ShoplistResource {
 
     }
 
+    // requires user location
+    @GetMapping("/{shoplist}/best")
+    public ResponseEntity<?> getBest(
+            @PathVariable("shoplist") Long id,
+            @RequestParam(value = "range", required = false) Double range) {
+
+        var defaultRange = 5.0; // kms
+
+        Shoplist shoplist = this.shoplistRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+
+        Geometry geometry = createCircle(
+                42.405527,
+                12.872346,
+                range == null ? defaultRange : range); // if range is not specified defaultRange will be used instead
+
+        var orderedByPriceSupermarkets = this.shoplistRepository
+                .getAllSupermarketsWithRangeOrderedByPrice(shoplist, geometry);
+
+        return ResponseEntity.ok(orderedByPriceSupermarkets);
+    }
+
+
+
+    private Geometry createCircle(double latitude, double longitude, final double radius) {
+        GeometricShapeFactory shapeFactory = new GeometricShapeFactory();
+        shapeFactory.setNumPoints(1000);
+        shapeFactory.setCentre(new Coordinate(latitude, longitude));
+        shapeFactory.setSize(radius * 0.024);
+        return shapeFactory.createCircle();
+    }
 
 }
