@@ -33,25 +33,17 @@ public class ShoplistResource {
 
     private final ShoplistRepository shoplistRepository;
 
-    private final SupermarketRepository supermarketRepository;
-
     private final ShoplistMapper shoplistMapper;
-
-    private final GeolocationService geolocationService;
 
     private final UserRepository userRepository;
 
     @Autowired
     public ShoplistResource(ShoplistRepository shoplistRepository,
-                            SupermarketRepository supermarketRepository,
                             ShoplistMapper shoplistMapper,
-                            GeolocationService geolocationService,
                             UserRepository userRepository) {
 
         this.shoplistRepository = shoplistRepository;
-        this.supermarketRepository = supermarketRepository;
         this.shoplistMapper = shoplistMapper;
-        this.geolocationService = geolocationService;
         this.userRepository = userRepository;
     }
 
@@ -59,7 +51,8 @@ public class ShoplistResource {
     public ResponseEntity<?> index(Principal principal) {
 
         // the route is protected
-        User user = this.userRepository.findByEmail(principal.getName()).get();
+        User user = this.userRepository.findByEmail(principal.getName())
+                .orElseThrow(EntityNotFoundException::new);
 
         Set<ShoplistDto> result = this.shoplistMapper.toDtoList(user.getShoplists());
 
@@ -89,7 +82,8 @@ public class ShoplistResource {
     @GetMapping("/{shoplist}")
     public ResponseEntity<ShoplistDto> show(@PathVariable("shoplist") Long id, Principal principal) {
 
-        User user = this.userRepository.findByEmail(principal.getName()).get();
+        User user = this.userRepository.findByEmail(principal.getName())
+                .orElseThrow(EntityNotFoundException::new);
 
         Optional<Shoplist> result = user.getShoplists().stream()
                 .filter(shoplist -> shoplist.getId().equals(id))
@@ -106,11 +100,6 @@ public class ShoplistResource {
     public ResponseEntity<?> destroy(@PathVariable("shoplist") Long id, Principal principal) {
         // Check if user has a list with that ID
         Optional<User> user = this.userRepository.findByEmail(principal.getName());
-
-        user.ifPresentOrElse(
-                u -> log.info("Resource: Shoplist, Method: Delete, from user with id:" + u.getId()),
-                () -> log.info("Could not find any user")
-        );
 
         if(user.isPresent()) {
             Optional<Shoplist> listToDelete = user.get().getShoplists().stream()
@@ -129,62 +118,70 @@ public class ShoplistResource {
     }
 
 
+//    @PostMapping("/{shoplist}/supermarkets")
+//    public ResponseEntity<?> getBestSupermarket(@PathVariable("shoplist") Long id,
+//                                                @Valid @RequestBody Position userPosition,
+//                                                Principal principal) {
+//
+//        User user = this.userRepository.findByEmail(principal.getName()).get();
+//
+//        Optional<Shoplist> userShoplists = user.getShoplists().stream()
+//                .filter(shoplist -> shoplist.getId().equals(id))
+//                .findFirst();
+//
+//        if (userShoplists.isEmpty()) return ResponseEntity.notFound().build();
+//
+//        // get only IDs
+//        List<Long> supermarketList = this.supermarketRepository.findAll()
+//                                        .stream()
+//                                        .map(Supermarket::getId)
+//                                        .collect(Collectors.toList());
+//
+//
+//        List<SupermarketResponse> results = this.shoplistRepository.getBestSupermarket(userShoplists.get().getId(), supermarketList)
+//                .stream()
+//                .map(supermarket -> {
+//                    double distance = this.geolocationService.calculateDistanceBetweenPoints(
+//                            userPosition,
+//                            new Position(supermarket.getLatitude(), supermarket.getLongitude()));
+//
+//                    return new SupermarketResponse(supermarket.getSupermarket_id(),
+//                            supermarket.getLongitude(),
+//                            supermarket.getLatitude(),
+//                            supermarket.getName(),
+//                            supermarket.getTotal(),
+//                            distance);
+//
+//                })
+//                .collect(Collectors.toList());
+//
+//
+//        return ResponseEntity.ok(results);
+//
+//    }
+
     @PostMapping("/{shoplist}/supermarkets")
-    public ResponseEntity<?> getBestSupermarket(@PathVariable("shoplist") Long id,
-                                                @Valid @RequestBody Position userPosition,
-                                                Principal principal) {
-
-        User user = this.userRepository.findByEmail(principal.getName()).get();
-
-        Optional<Shoplist> userShoplists = user.getShoplists().stream()
-                .filter(shoplist -> shoplist.getId().equals(id))
-                .findFirst();
-
-        if (userShoplists.isEmpty()) return ResponseEntity.notFound().build();
-
-        // get only IDs
-        List<Long> supermarketList = this.supermarketRepository.findAll()
-                                        .stream()
-                                        .map(Supermarket::getId)
-                                        .collect(Collectors.toList());
-
-                                        
-        List<SupermarketResponse> results = this.shoplistRepository.getBestSupermarket(userShoplists.get().getId(), supermarketList)
-                .stream()
-                .map(supermarket -> {
-                    double distance = this.geolocationService.calculateDistanceBetweenPoints(
-                            userPosition,
-                            new Position(supermarket.getLatitude(), supermarket.getLongitude()));
-
-                    return new SupermarketResponse(supermarket.getSupermarket_id(),
-                            supermarket.getLongitude(),
-                            supermarket.getLatitude(),
-                            supermarket.getName(),
-                            supermarket.getTotal(),
-                            distance);
-
-                })
-                .collect(Collectors.toList());
-
-
-        return ResponseEntity.ok(results);
-
-    }
-
-    // requires user location
-    @GetMapping("/{shoplist}/best")
     public ResponseEntity<?> getBest(
             @PathVariable("shoplist") Long id,
-            @RequestParam(value = "range", required = false) Double range) {
+            @RequestParam(value = "range", required = false) Double range,
+            @Valid @RequestBody Position userPosition,
+            Principal principal) {
 
-        var defaultRange = 5.0; // kms
+        var supermarketWithIn = range == null ? 5.0 : range; // kms
 
-        Shoplist shoplist = this.shoplistRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        User user = this.userRepository
+                .findByEmail(principal.getName())
+                .orElseThrow(EntityNotFoundException::new);
+
+        Shoplist shoplist = user.getShoplists().stream()
+                .filter(list -> list.getId().equals(id))
+                .findFirst()
+                .orElseThrow(EntityNotFoundException::new);
 
         Geometry geometry = createCircle(
-                42.405527,
-                12.872346,
-                range == null ? defaultRange : range); // if range is not specified defaultRange will be used instead
+                userPosition.getLatitude(),
+                userPosition.getLongitude(),
+                supermarketWithIn);
 
         var orderedByPriceSupermarkets = this.shoplistRepository
                 .getAllSupermarketsWithRangeOrderedByPrice(shoplist, geometry);
