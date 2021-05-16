@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -43,11 +44,10 @@ public class ProductResource {
 
     @GetMapping("/{product}")
     public ResponseEntity<ProductDto> show(@PathVariable("product") Long productId) {
-        Optional<Product> product = this.productRepository.findById(productId);
+        Product product = this.productRepository.findById(productId)
+                .orElseThrow(EntityNotFoundException::new);
 
-        if(product.isEmpty()) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(productMapper.toDto(product.get()));
+        return ResponseEntity.ok(productMapper.toDto(product));
     }
 
 

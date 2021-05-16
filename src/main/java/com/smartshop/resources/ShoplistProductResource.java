@@ -9,6 +9,7 @@ import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.ShoplistRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 
 @RestController
@@ -31,7 +33,7 @@ public class ShoplistProductResource {
 
     private final ProductShoplistMapper productShoplistMapper;
 
-
+    @Autowired
     public ShoplistProductResource(ShoplistRepository shoplistRepository,
                                    ProductRepository productRepository,
                                    ProductShoplistMapper productShoplistMapper) {
@@ -46,10 +48,10 @@ public class ShoplistProductResource {
     public ResponseEntity<List<ProductShoplistDto>> index(
             @PathVariable("shoplist") Long id
     ) {
-        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
+        Shoplist shoplist = this.shoplistRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
-        if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
-        List<ProductShoplistDto> products =  shoplist.get().getProducts()
+        List<ProductShoplistDto> products =  shoplist.getProducts()
                 .stream()
                 .map(productShoplistMapper::toDto)
                 .collect(Collectors.toList());
@@ -64,14 +66,15 @@ public class ShoplistProductResource {
             @PathVariable("shoplist") Long id,
             @Valid @RequestBody EntityID productId
     ) {
-        log.info("ADDING PRODUCT WITH ID > " + productId.getId());
-        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-        Optional<Product> product = this.productRepository.findById(productId.getId());
 
-        if(shoplist.isEmpty() || product.isEmpty()) return ResponseEntity.badRequest().build();
+        Shoplist shoplist = this.shoplistRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+
+        Product product = this.productRepository.findById(productId.getId())
+                .orElseThrow(EntityNotFoundException::new);
 
         // get, if exists, the product in the shopping list
-        Optional<ProductShoplist> optionalProductInList = shoplist.get().getProducts().stream()
+        Optional<ProductShoplist> optionalProductInList = shoplist.getProducts().stream()
                 .filter(ps -> ps.getProduct().getId().equals(productId.getId()))
                 .findFirst();
 
@@ -89,11 +92,11 @@ public class ShoplistProductResource {
 
         ProductShoplist ps = new ProductShoplist();
 
-        ps.setShoplist(shoplist.get());
-        ps.setProduct(product.get());
+        ps.setShoplist(shoplist);
+        ps.setProduct(product);
 
-        shoplist.get().getProducts().add(ps);
-        product.get().getShoplists().add(ps);
+        shoplist.getProducts().add(ps);
+        product.getShoplists().add(ps);
 
         this.shoplistRepository.flush();
 

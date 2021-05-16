@@ -7,9 +7,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/supermarkets")
@@ -29,11 +30,10 @@ public class SupermarketResource {
 
     @GetMapping("/{id}")
     public ResponseEntity<Supermarket> show(@PathVariable("id") Long id) {
-        Optional<Supermarket> searched = this.supermarketRepository.findById(id);
+        Supermarket searched = this.supermarketRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
-        if(searched.isEmpty()) return ResponseEntity.notFound().build();
-
-        return ResponseEntity.ok(searched.get());
+        return ResponseEntity.ok(searched);
     }
 
 
@@ -48,11 +48,10 @@ public class SupermarketResource {
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> destroy(@PathVariable("id") Long id) {
 
-        Optional<Supermarket> searched = this.supermarketRepository.findById(id);
+        Supermarket searched = this.supermarketRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
-        if(searched.isEmpty()) return ResponseEntity.notFound().build();
-
-        this.supermarketRepository.delete(searched.get());
+        this.supermarketRepository.delete(searched);
 
         return ResponseEntity.noContent().build();
 

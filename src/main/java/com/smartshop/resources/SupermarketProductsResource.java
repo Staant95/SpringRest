@@ -8,9 +8,11 @@ import com.smartshop.models.Supermarket;
 import com.smartshop.models.requestBody.ProductInSupermarket;
 import com.smartshop.repositories.ProductRepository;
 import com.smartshop.repositories.SupermarketRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +28,7 @@ public class SupermarketProductsResource {
 
     private final ProductSupermarketMapper productSupermarketMapper;
 
+    @Autowired
     public SupermarketProductsResource(SupermarketRepository supermarketRepository,
                                        ProductRepository productRepository,
                                        ProductSupermarketMapper productSupermarketMapper) {
@@ -41,11 +44,10 @@ public class SupermarketProductsResource {
             @PathVariable("supermarket") Long supermarketId
     ) {
 
-        Optional<Supermarket> searchedSupermarket = this.supermarketRepository.findById(supermarketId);
+        Supermarket searchedSupermarket = this.supermarketRepository.findById(supermarketId)
+                .orElseThrow(EntityNotFoundException::new);
 
-        if(searchedSupermarket.isEmpty()) return ResponseEntity.notFound().build();
-
-        List<ProductSupermarketDto> products = searchedSupermarket.get().getProducts()
+        List<ProductSupermarketDto> products = searchedSupermarket.getProducts()
                                 .stream()
                                 .map(productSupermarketMapper::toDto)
                                 .collect(Collectors.toList());

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import javax.persistence.EntityNotFoundException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,12 +41,11 @@ public class ShoplistUserResource {
     @GetMapping
     public ResponseEntity<List<UserDto>> index(@PathVariable("shoplist") Long id) {
         
-        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
-
-        if(shoplist.isEmpty()) return ResponseEntity.notFound().build();
+        Shoplist shoplist = this.shoplistRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
         List<UserDto> result = this.userMapper.toDtoList(
-                new ArrayList<>(shoplist.get().getUsers())
+                new ArrayList<>(shoplist.getUsers())
         );
 
         return ResponseEntity.ok(result);
@@ -84,15 +84,16 @@ public class ShoplistUserResource {
             Principal principal) {
 
         // I am sure I have the user, otherwise the request would have been blocked by JWT_Filter
-        User loggedUser = this.userRepository.findByEmail(principal.getName()).get();
-        Optional<Shoplist> shoplist = this.shoplistRepository.findById(id);
+        User loggedUser = this.userRepository.findByEmail(principal.getName())
+                .orElseThrow(EntityNotFoundException::new);
 
-        if (shoplist.isEmpty()) return ResponseEntity.notFound().build();
+        Shoplist shoplist = this.shoplistRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
 
-        shoplist.get().getUsers().remove(loggedUser);
+        shoplist.getUsers().remove(loggedUser);
         this.shoplistRepository.flush();
 
-        if(shoplist.get().getUsers().size() == 0) this.shoplistRepository.deleteById(id);
+        if(shoplist.getUsers().size() == 0) this.shoplistRepository.deleteById(id);
 
         return ResponseEntity.status(HttpStatus.OK).build();
     }
