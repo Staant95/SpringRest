@@ -2,7 +2,7 @@ package com.smartshop.models.auth;
 
 import javax.validation.constraints.NotBlank;
 
-public class AuthenticationRequest {
+public class LoginForm {
 
     @NotBlank(message = "Email is required")
     private String email;
@@ -10,10 +10,10 @@ public class AuthenticationRequest {
     @NotBlank(message = "Password is required")
     private String password;
 
-    public AuthenticationRequest() {
+    public LoginForm() {
     }
 
-    public AuthenticationRequest(String email, String password) {
+    public LoginForm(String email, String password) {
         this.email = email;
         this.password = password;
     }

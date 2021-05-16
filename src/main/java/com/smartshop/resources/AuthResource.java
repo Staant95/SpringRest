@@ -6,9 +6,10 @@ import com.smartshop.dto.UserDto;
 import com.smartshop.dtoMappers.UserMapper;
 import com.smartshop.exceptionHandlers.DuplicateEmailException;
 import com.smartshop.exceptionHandlers.InvalidLoginCredentialsException;
+import com.smartshop.models.auth.RegistrationForm;
 import com.smartshop.models.responses.Token;
 import com.smartshop.models.User;
-import com.smartshop.models.auth.AuthenticationRequest;
+import com.smartshop.models.auth.LoginForm;
 import com.smartshop.repositories.UserRepository;
 import com.smartshop.utils.JwtUtil;
 import org.slf4j.Logger;
@@ -22,9 +23,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/auth")
@@ -56,7 +56,7 @@ public class AuthResource {
 
     @PostMapping("/login")
     public ResponseEntity<Token> loginAndCreateToken(
-            @RequestBody AuthenticationRequest authenticationRequest) {
+            @RequestBody LoginForm authenticationRequest) {
 
        try {
            this.authenticationManager.authenticate(
@@ -71,7 +71,8 @@ public class AuthResource {
 
         String jwt = this.jwtUtil.generateToken(userDetails);
 
-        User registred = this.userRepository.findByEmail(this.jwtUtil.extractUsername(jwt)).get();
+        User registred = this.userRepository.findByEmail(this.jwtUtil.extractUsername(jwt))
+                            .orElseThrow(EntityNotFoundException::new);
 
         Token token = new Token(jwt, this.jwtUtil.extractExpiration(jwt), userMapper.toDto(registred));
 
@@ -94,56 +95,8 @@ public class AuthResource {
             throw new DuplicateEmailException();
         }
 
-        return ResponseEntity.
-                status(HttpStatus.CREATED)
-                .body(userMapper.toDto(usr));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userMapper.toDto(usr));
     }
 
-}
-
-class RegistrationForm {
-
-    @NotBlank(message = "Can't be empty")
-    private String name;
-
-    @NotBlank(message = "Can't be empty")
-    private String lastname;
-
-    @NotBlank(message = "Can't be empty")
-    @Email(message = "Should be an email")
-    private String email;
-
-    @NotBlank(message = "Can't be empty")
-    private String password;
-
-    public RegistrationForm() {
-    }
-
-    public RegistrationForm(String name, String lastname, String email, String password) {
-        this.name = name;
-        this.lastname = lastname;
-        this.email = email;
-        this.password = password;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getLastname() {
-        return lastname;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }
 

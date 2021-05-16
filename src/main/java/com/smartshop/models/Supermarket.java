@@ -1,6 +1,5 @@
 package com.smartshop.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
@@ -25,7 +24,7 @@ public class Supermarket {
     @Column(nullable = false)
     private double longitude;
 
-    @Column(columnDefinition = "geometry")
+    @Column(columnDefinition = "point")
     private Point location;
 
 
